@@ -8,9 +8,14 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__)
     app.config.from_object("config.Config")
+    app.config["SECRET_KEY"] = "lms-super-secret-key"
+
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    login_manager.login_view = "main.login"
+    login_manager.login_message_category = "info"
 
     from app.routes import main
     app.register_blueprint(main)
