@@ -1,2 +1,14 @@
-# Learning-Management-System-LMS-
-A Learning Management System (LMS) built with Flask, developed incrementally from beginner to advanced concepts including authentication, course management, enrollment, assignments, quizzes, APIs, Docker, and deployment.
+# Learning-Management-System
+A Learning Management System (LMS) built with Flask.
+
+## Phase 1 - Project Setup
+
+- Flask Application Factory
+- Blueprint Structure
+- SQLAlchemy Setup
+- Basic Routing
+
+## Tech Stack
+- Python
+- Flask
+- SQLite
