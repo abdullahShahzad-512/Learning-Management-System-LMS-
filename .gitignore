@@ -1,10 +1,31 @@
-venv/
+# Python
 __pycache__/
 *.pyc
-instance/
-*.db
+*.pyo
+*.pyd
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables
 .env
+.flaskenv
+
+# Database
+*.db
+*.sqlite3
+instance/
+
+# IDE
 .vscode/
 .idea/
-.venv/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
