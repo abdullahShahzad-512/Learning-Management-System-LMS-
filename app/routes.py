@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for,flash
 from app import db
-from app.models import User, Course, Enrollment
+from app.models import User, Course, Enrollment , Lesson
 from app.forms import RegisterForm, LoginForm, CourseForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
@@ -148,3 +148,64 @@ def my_courses():
         course_list = [e.course for e in current_user.enrollments]
 
     return render_template("my_courses.html", courses=course_list)
+
+
+@main.route("/courses/<int:course_id>/lessons/create", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def create_lesson(course_id):
+    course = Course.query.get_or_404(course_id)
+
+    if course.teacher_id != current_user.id:
+        abort(403)
+
+    form = LessonForm()
+    if form.validate_on_submit():
+        lesson = Lesson(
+            title=form.title.data,
+            video_url=form.video_url.data,
+            content=form.content.data,
+            course_id=course.id
+        )
+        db.session.add(lesson)
+        db.session.commit()
+        flash("Lesson added successfully!", "success")
+        return redirect(url_for("main.course_lessons", course_id=course.id))
+
+    return render_template("create_lesson.html", form=form, course=course)
+
+
+@main.route("/courses/<int:course_id>/lessons")
+@login_required
+def course_lessons(course_id):
+    course = Course.query.get_or_404(course_id)
+
+    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
+    is_enrolled = Enrollment.query.filter_by(
+        student_id=current_user.id, course_id=course.id
+    ).first() is not None
+
+    if not (is_owner or is_enrolled):
+        flash("You must enroll in this course to view its lessons.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    lessons = Lesson.query.filter_by(course_id=course.id).order_by(Lesson.order).all()
+    return render_template("course_lessons.html", course=course, lessons=lessons, is_owner=is_owner)
+
+
+@main.route("/lessons/<int:lesson_id>")
+@login_required
+def view_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = lesson.course
+
+    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
+    is_enrolled = Enrollment.query.filter_by(
+        student_id=current_user.id, course_id=course.id
+    ).first() is not None
+
+    if not (is_owner or is_enrolled):
+        flash("You must enroll in this course to view this lesson.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    return render_template("view_lesson.html", lesson=lesson, course=course)

@@ -18,3 +18,9 @@ class CourseForm(FlaskForm):
     title = StringField("Course Title", validators=[DataRequired(), Length(min=3, max=150)])
     description = TextAreaField("Description", validators=[Optional()])
     submit = SubmitField("Create Course")
+
+class LessonForm(FlaskForm):
+    title = StringField("Lesson Title", validators=[DataRequired(), Length(min=3, max=150)])
+    video_url = StringField("Video URL", validators=[Optional(), Length(max=300)])
+    content = TextAreaField("Lesson Notes / Content", validators=[Optional()])
+    submit = SubmitField("Add Lesson")

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ lesson.title }}</h2>
+<p class="text-muted">Part of: {{ course.title }}</p>
+
+{% if lesson.video_url %}
+  <div class="ratio ratio-16x9 mb-3">
+    <iframe src="{{ lesson.video_url }}" allowfullscreen></iframe>
+  </div>
+{% endif %}
+
+{% if lesson.content %}
+  <p>{{ lesson.content }}</p>
+{% endif %}
+
+<a href="{{ url_for('main.course_lessons', course_id=course.id) }}" class="btn btn-outline-light btn-sm">← Back to Lessons</a>
+{% endblock %}

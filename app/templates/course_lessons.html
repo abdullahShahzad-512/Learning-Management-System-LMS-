@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ course.title }} — Lessons</h2>
+
+{% if is_owner %}
+  <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="btn btn-warning mb-3">+ Add Lesson</a>
+{% endif %}
+
+<ul class="list-group">
+  {% for lesson in lessons %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ lesson.title }}
+      <a href="{{ url_for('main.view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+    </li>
+  {% else %}
+    <li class="list-group-item">No lessons added yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
