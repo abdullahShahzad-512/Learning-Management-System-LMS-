@@ -1,0 +1,22 @@
+{% extends "admin_base.html" %}
+{% block admin_content %}
+<h2 class="mb-4">Manage Courses</h2>
+
+<table class="table admin-table">
+  <thead><tr><th>Title</th><th>Teacher</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for course in courses %}
+      <tr>
+        <td>{{ course.title }}</td>
+        <td>{{ course.teacher.username }}</td>
+        <td>
+          <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+          <form method="POST" action="{{ url_for('main.delete_course', course_id=course.id) }}" class="d-inline" onsubmit="return confirm('Delete this course? This cannot be undone.');">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
