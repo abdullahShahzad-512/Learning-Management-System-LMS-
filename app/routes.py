@@ -1,11 +1,21 @@
 from flask import Blueprint, render_template, redirect, url_for,flash
 from app import db
-from app.models import User
-from app.forms import RegisterForm, LoginForm
+from app.models import User, Course, Enrollment
+from app.forms import RegisterForm, LoginForm, CourseForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
+from functools import wraps
+from flask import abort
 
 main = Blueprint("main", __name__)
+
+def teacher_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.role != "teacher":
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
 @main.route("/")
 def home():
@@ -69,3 +79,72 @@ def logout():
     logout_user()
     flash("You have been logged out", "info")
     return redirect(url_for("main.login"))
+
+
+@main.route("/courses")
+def courses():
+    all_courses = Course.query.all()
+    return render_template("courses.html", courses=all_courses)
+
+
+@main.route("/courses/create", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def create_course():
+    form = CourseForm()
+    if form.validate_on_submit():
+        course = Course(
+            title=form.title.data,
+            description=form.description.data,
+            teacher_id=current_user.id
+        )
+        db.session.add(course)
+        db.session.commit()
+        flash("Course created successfully!", "success")
+        return redirect(url_for("main.courses"))
+
+    return render_template("create_course.html", form=form)
+
+
+@main.route("/courses/<int:course_id>")
+def course_detail(course_id):
+    course = Course.query.get_or_404(course_id)
+
+    is_enrolled = False
+    if current_user.is_authenticated and current_user.role == "student":
+        is_enrolled = Enrollment.query.filter_by(
+            student_id=current_user.id, course_id=course.id
+        ).first() is not None
+
+    return render_template("course_detail.html", course=course, is_enrolled=is_enrolled)
+
+
+@main.route("/courses/<int:course_id>/enroll", methods=["POST"])
+@login_required
+def enroll(course_id):
+    if current_user.role != "student":
+        flash("Only students can enroll in courses.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course_id))
+
+    course = Course.query.get_or_404(course_id)
+    existing = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first()
+
+    if existing:
+        flash("You are already enrolled in this course.", "info")
+    else:
+        db.session.add(Enrollment(student_id=current_user.id, course_id=course.id))
+        db.session.commit()
+        flash(f"Enrolled in {course.title}!", "success")
+
+    return redirect(url_for("main.course_detail", course_id=course_id))
+
+
+@main.route("/my-courses")
+@login_required
+def my_courses():
+    if current_user.role == "teacher":
+        course_list = Course.query.filter_by(teacher_id=current_user.id).all()
+    else:
+        course_list = [e.course for e in current_user.enrollments]
+
+    return render_template("my_courses.html", courses=course_list)

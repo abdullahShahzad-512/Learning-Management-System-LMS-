@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if current_user.role == "teacher" %}My Created Courses{% else %}My Enrolled Courses{% endif %}</h2>
+
+<div class="row">
+  {% for course in courses %}
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ course.title }}</h5>
+          <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p>Nothing here yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
