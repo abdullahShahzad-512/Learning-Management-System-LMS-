@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for,flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from app import db
-from app.models import User, Course, Enrollment , Lesson
-from app.forms import RegisterForm, LoginForm, CourseForm
+from app.models import User, Course, Enrollment , Lesson, Assignment, Submission, Quiz, Question, Choice, QuizResult
+from app.forms import RegisterForm, LoginForm, CourseForm, LessonForm, AssignmentForm, SubmissionForm, GradeForm, QuizForm, QuestionForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from functools import wraps
@@ -209,3 +209,144 @@ def view_lesson(lesson_id):
         return redirect(url_for("main.course_detail", course_id=course.id))
 
     return render_template("view_lesson.html", lesson=lesson, course=course)
+
+@main.route("/courses/<int:course_id>/assignments/create", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def create_assignment(course_id):
+    course = Course.query.get_or_404(course_id)
+    if course.teacher_id != current_user.id:
+        abort(403)
+
+    form = AssignmentForm()
+    if form.validate_on_submit():
+        assignment = Assignment(
+            title=form.title.data,
+            description=form.description.data,
+            due_date=form.due_date.data,
+            course_id=course.id
+        )
+        db.session.add(assignment)
+        db.session.commit()
+        flash("Assignment created!", "success")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    return render_template("create_assignment.html", form=form, course=course)
+
+
+@main.route("/assignments/<int:assignment_id>", methods=["GET", "POST"])
+@login_required
+def assignment_detail(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    course = assignment.course
+
+    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
+    is_enrolled = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first() is not None
+
+    if not (is_owner or is_enrolled):
+        flash("You must be enrolled to view this assignment.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    if is_owner:
+        submissions = Submission.query.filter_by(assignment_id=assignment.id).all()
+        return render_template("assignment_detail_teacher.html", assignment=assignment, submissions=submissions)
+
+    form = SubmissionForm()
+    existing = Submission.query.filter_by(student_id=current_user.id, assignment_id=assignment.id).first()
+
+    if form.validate_on_submit() and not existing:
+        db.session.add(Submission(content=form.content.data, student_id=current_user.id, assignment_id=assignment.id))
+        db.session.commit()
+        flash("Assignment submitted!", "success")
+        return redirect(url_for("main.assignment_detail", assignment_id=assignment.id))
+
+    return render_template("assignment_detail_student.html", assignment=assignment, form=form, existing=existing)
+
+
+@main.route("/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def grade_submission(submission_id):
+    submission = Submission.query.get_or_404(submission_id)
+    if submission.assignment.course.teacher_id != current_user.id:
+        abort(403)
+
+    form = GradeForm(obj=submission)
+    if form.validate_on_submit():
+        submission.grade = form.grade.data
+        submission.feedback = form.feedback.data
+        db.session.commit()
+        flash("Grade saved!", "success")
+        return redirect(url_for("main.assignment_detail", assignment_id=submission.assignment_id))
+
+    return render_template("grade_submission.html", form=form, submission=submission)
+
+@main.route("/courses/<int:course_id>/quizzes/create", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def create_quiz(course_id):
+    course = Course.query.get_or_404(course_id)
+    if course.teacher_id != current_user.id:
+        abort(403)
+
+    form = QuizForm()
+    if form.validate_on_submit():
+        quiz = Quiz(title=form.title.data, course_id=course.id)
+        db.session.add(quiz)
+        db.session.commit()
+        flash("Quiz created — now add questions!", "success")
+        return redirect(url_for("main.add_question", quiz_id=quiz.id))
+
+    return render_template("create_quiz.html", form=form, course=course)
+
+
+@main.route("/quizzes/<int:quiz_id>/questions/add", methods=["GET", "POST"])
+@login_required
+@teacher_required
+def add_question(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    if quiz.course.teacher_id != current_user.id:
+        abort(403)
+
+    form = QuestionForm()
+    if form.validate_on_submit():
+        question = Question(text=form.text.data, quiz_id=quiz.id)
+        db.session.add(question)
+        db.session.flush()
+
+        for i, text in enumerate([form.choice1.data, form.choice2.data, form.choice3.data, form.choice4.data], start=1):
+            if text:
+                db.session.add(Choice(text=text, is_correct=(str(i) == form.correct_choice.data), question_id=question.id))
+
+        db.session.commit()
+        flash("Question added! Add another or move on.", "success")
+        return redirect(url_for("main.add_question", quiz_id=quiz.id))
+
+    return render_template("add_question.html", form=form, quiz=quiz)
+
+
+@main.route("/quizzes/<int:quiz_id>", methods=["GET", "POST"])
+@login_required
+def take_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course = quiz.course
+    is_enrolled = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first() is not None
+
+    if current_user.role != "student" or not is_enrolled:
+        flash("You must be an enrolled student to take this quiz.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    if request.method == "POST":
+        score = 0
+        for question in quiz.questions:
+            selected = request.form.get(f"question_{question.id}")
+            correct = next((c for c in question.choices if c.is_correct), None)
+            if selected and correct and int(selected) == correct.id:
+                score += 1
+
+        db.session.add(QuizResult(score=score, total=len(quiz.questions), student_id=current_user.id, quiz_id=quiz.id))
+        db.session.commit()
+        flash(f"Quiz submitted! You scored {score}/{len(quiz.questions)}", "success")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    return render_template("take_quiz.html", quiz=quiz)

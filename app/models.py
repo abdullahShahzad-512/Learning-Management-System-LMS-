@@ -47,3 +47,65 @@ class Lesson(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     course = db.relationship("Course", backref="lessons")
+class Assignment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    due_date = db.Column(db.DateTime, nullable=True)
+    course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    course = db.relationship("Course", backref="assignments")
+
+
+class Submission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    grade = db.Column(db.String(10), nullable=True)
+    feedback = db.Column(db.Text, nullable=True)
+
+    student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"), nullable=False)
+
+    student = db.relationship("User", backref="submissions")
+    assignment = db.relationship("Assignment", backref="submissions")
+
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    course = db.relationship("Course", backref="quizzes")
+
+
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(300), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
+
+    quiz = db.relationship("Quiz", backref="questions")
+
+
+class Choice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(200), nullable=False)
+    is_correct = db.Column(db.Boolean, default=False)
+    question_id = db.Column(db.Integer, db.ForeignKey("question.id"), nullable=False)
+
+    question = db.relationship("Question", backref="choices")
+
+
+class QuizResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    score = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Integer, nullable=False)
+    taken_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
+
+    student = db.relationship("User", backref="quiz_results")
+    quiz = db.relationship("Quiz", backref="results")

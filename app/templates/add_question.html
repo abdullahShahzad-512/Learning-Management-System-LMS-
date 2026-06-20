@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Add Question — {{ quiz.title }}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.text.label }}{{ form.text(class="form-control") }}</div>
+    <div class="mb-2">{{ form.choice1.label }}{{ form.choice1(class="form-control") }}</div>
+    <div class="mb-2">{{ form.choice2.label }}{{ form.choice2(class="form-control") }}</div>
+    <div class="mb-2">{{ form.choice3.label }}{{ form.choice3(class="form-control") }}</div>
+    <div class="mb-2">{{ form.choice4.label }}{{ form.choice4(class="form-control") }}</div>
+    <div class="mb-3">{{ form.correct_choice.label }}{{ form.correct_choice(class="form-select") }}</div>
+    {{ form.submit(class="btn btn-warning") }}
+</form>
+<a href="{{ url_for('main.course_detail', course_id=quiz.course_id) }}" class="btn btn-outline-light btn-sm mt-2">Done adding questions</a>
+{% endblock %}
