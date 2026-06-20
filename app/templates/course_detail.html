@@ -4,19 +4,22 @@
 <p class="text-muted">Taught by {{ course.teacher.username }}</p>
 <p>{{ course.description }}</p>
 
-{% if current_user.is_authenticated and current_user.role == "student" %}
-    {% if is_enrolled %}
-        <span class="badge bg-success">You're enrolled</span>
-    {% else %}
-        <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}">
-            <button type="submit" class="btn btn-warning">Enroll in this Course</button>
-        </form>
-    {% endif %}
-{% elif current_user.is_authenticated and current_user.role == "teacher" %}
-<a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="btn btn-outline-light mt-2">+ Add Assignment</a>
-<a href="{{ url_for('main.create_quiz', course_id=course.id) }}" class="btn btn-outline-light mt-2">+ Add Quiz</a>
-{% elif not current_user.is_authenticated %}
+{% if is_owner %}
+    <span class="badge bg-primary">You teach this course</span>
+    <div class="mt-2">
+        <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add Lesson</a>
+        <a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add Assignment</a>
+        <a href="{{ url_for('main.create_quiz', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add Quiz</a>
+    </div>
+{% elif is_enrolled %}
+    <span class="badge bg-success">You're enrolled</span>
+{% elif current_user.is_authenticated %}
+    <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}">
+        <button type="submit" class="btn btn-warning">Enroll in this Course</button>
+    </form>
+{% else %}
     <a href="{{ url_for('main.login') }}" class="btn btn-outline-light">Login to enroll</a>
 {% endif %}
+
 <a href="{{ url_for('main.course_lessons', course_id=course.id) }}" class="btn btn-outline-light mt-2">View Lessons</a>
 {% endblock %}

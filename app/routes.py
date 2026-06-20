@@ -9,10 +9,10 @@ from flask import abort
 
 main = Blueprint("main", __name__)
 
-def teacher_required(f):
+def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if current_user.role != "teacher":
+        if not current_user.is_admin():
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
@@ -89,46 +89,34 @@ def courses():
 
 @main.route("/courses/create", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def create_course():
     form = CourseForm()
     if form.validate_on_submit():
-        course = Course(
-            title=form.title.data,
-            description=form.description.data,
-            teacher_id=current_user.id
-        )
+        course = Course(title=form.title.data, description=form.description.data, teacher_id=current_user.id)
         db.session.add(course)
         db.session.commit()
-        flash("Course created successfully!", "success")
+        flash("Course created! You're now the teacher of this course.", "success")
         return redirect(url_for("main.courses"))
-
     return render_template("create_course.html", form=form)
 
 
 @main.route("/courses/<int:course_id>")
 def course_detail(course_id):
     course = Course.query.get_or_404(course_id)
-
-    is_enrolled = False
-    if current_user.is_authenticated and current_user.role == "student":
-        is_enrolled = Enrollment.query.filter_by(
-            student_id=current_user.id, course_id=course.id
-        ).first() is not None
-
-    return render_template("course_detail.html", course=course, is_enrolled=is_enrolled)
-
+    is_owner = current_user.is_authenticated and current_user.is_teacher_of(course)
+    is_enrolled = current_user.is_authenticated and current_user.is_enrolled_in(course)
+    return render_template("course_detail.html", course=course, is_owner=is_owner, is_enrolled=is_enrolled)
 
 @main.route("/courses/<int:course_id>/enroll", methods=["POST"])
 @login_required
 def enroll(course_id):
-    if current_user.role != "student":
-        flash("Only students can enroll in courses.", "danger")
+    course = Course.query.get_or_404(course_id)
+
+    if current_user.is_teacher_of(course):
+        flash("You're the teacher of this course — you already have full access.", "info")
         return redirect(url_for("main.course_detail", course_id=course_id))
 
-    course = Course.query.get_or_404(course_id)
     existing = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first()
-
     if existing:
         flash("You are already enrolled in this course.", "info")
     else:
@@ -149,14 +137,11 @@ def my_courses():
 
     return render_template("my_courses.html", courses=course_list)
 
-
 @main.route("/courses/<int:course_id>/lessons/create", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def create_lesson(course_id):
     course = Course.query.get_or_404(course_id)
-
-    if course.teacher_id != current_user.id:
+    if not current_user.is_teacher_of(course):
         abort(403)
 
     form = LessonForm()
@@ -179,11 +164,8 @@ def create_lesson(course_id):
 @login_required
 def course_lessons(course_id):
     course = Course.query.get_or_404(course_id)
-
-    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
-    is_enrolled = Enrollment.query.filter_by(
-        student_id=current_user.id, course_id=course.id
-    ).first() is not None
+    is_owner = current_user.is_teacher_of(course)
+    is_enrolled = current_user.is_enrolled_in(course)
 
     if not (is_owner or is_enrolled):
         flash("You must enroll in this course to view its lessons.", "danger")
@@ -199,12 +181,7 @@ def view_lesson(lesson_id):
     lesson = Lesson.query.get_or_404(lesson_id)
     course = lesson.course
 
-    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
-    is_enrolled = Enrollment.query.filter_by(
-        student_id=current_user.id, course_id=course.id
-    ).first() is not None
-
-    if not (is_owner or is_enrolled):
+    if not (current_user.is_teacher_of(course) or current_user.is_enrolled_in(course)):
         flash("You must enroll in this course to view this lesson.", "danger")
         return redirect(url_for("main.course_detail", course_id=course.id))
 
@@ -212,10 +189,9 @@ def view_lesson(lesson_id):
 
 @main.route("/courses/<int:course_id>/assignments/create", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def create_assignment(course_id):
     course = Course.query.get_or_404(course_id)
-    if course.teacher_id != current_user.id:
+    if not current_user.is_teacher_of(course):
         abort(403)
 
     form = AssignmentForm()
@@ -240,8 +216,8 @@ def assignment_detail(assignment_id):
     assignment = Assignment.query.get_or_404(assignment_id)
     course = assignment.course
 
-    is_owner = current_user.role == "teacher" and course.teacher_id == current_user.id
-    is_enrolled = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first() is not None
+    is_owner = current_user.is_teacher_of(course)
+    is_enrolled = current_user.is_enrolled_in(course)
 
     if not (is_owner or is_enrolled):
         flash("You must be enrolled to view this assignment.", "danger")
@@ -265,10 +241,9 @@ def assignment_detail(assignment_id):
 
 @main.route("/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def grade_submission(submission_id):
     submission = Submission.query.get_or_404(submission_id)
-    if submission.assignment.course.teacher_id != current_user.id:
+    if not current_user.is_teacher_of(submission.assignment.course):
         abort(403)
 
     form = GradeForm(obj=submission)
@@ -283,10 +258,9 @@ def grade_submission(submission_id):
 
 @main.route("/courses/<int:course_id>/quizzes/create", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def create_quiz(course_id):
     course = Course.query.get_or_404(course_id)
-    if course.teacher_id != current_user.id:
+    if not current_user.is_teacher_of(course):
         abort(403)
 
     form = QuizForm()
@@ -302,10 +276,9 @@ def create_quiz(course_id):
 
 @main.route("/quizzes/<int:quiz_id>/questions/add", methods=["GET", "POST"])
 @login_required
-@teacher_required
 def add_question(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    if quiz.course.teacher_id != current_user.id:
+    if not current_user.is_teacher_of(quiz.course):
         abort(403)
 
     form = QuestionForm()
@@ -330,9 +303,8 @@ def add_question(quiz_id):
 def take_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     course = quiz.course
-    is_enrolled = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first() is not None
 
-    if current_user.role != "student" or not is_enrolled:
+    if not current_user.is_enrolled_in(course):
         flash("You must be an enrolled student to take this quiz.", "danger")
         return redirect(url_for("main.course_detail", course_id=course.id))
 

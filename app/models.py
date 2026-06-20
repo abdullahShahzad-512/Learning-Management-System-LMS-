@@ -5,13 +5,19 @@ from datetime import datetime
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-
     password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), default="user")  # only meaningful value now: "admin"
 
-    role = db.Column(db.String(20), default="student")
+    def is_admin(self):
+        return self.role == "admin"
+
+    def is_teacher_of(self, course):
+        return self.id == course.teacher_id
+
+    def is_enrolled_in(self, course):
+        return Enrollment.query.filter_by(student_id=self.id, course_id=course.id).first() is not None
 
 
 @login_manager.user_loader
