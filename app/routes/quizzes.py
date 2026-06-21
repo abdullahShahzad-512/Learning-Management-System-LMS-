@@ -69,6 +69,12 @@ def take_quiz(quiz_id):
         db.session.add(QuizResult(score=score, total=len(quiz.questions), student_id=current_user.id, quiz_id=quiz.id))
         db.session.commit()
         flash(f"Quiz submitted! You scored {score}/{len(quiz.questions)}", "success")
-        return redirect(url_for("main.course_detail", course_id=course.id))
+        return redirect(url_for("main.my_grades"))
 
-    return render_template("take_quiz.html", quiz=quiz)
+    previous_result = (
+        QuizResult.query
+        .filter_by(student_id=current_user.id, quiz_id=quiz.id)
+        .order_by(QuizResult.taken_at.desc())
+        .first()
+    )
+    return render_template("take_quiz.html", quiz=quiz, previous_result=previous_result)

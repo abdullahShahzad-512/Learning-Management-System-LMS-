@@ -1,17 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>{{ quiz.title }}</h2>
+{% if previous_result %}
+<div class="alert alert-info">You previously scored <strong>{{ previous_result.score }}/{{ previous_result.total
+    }}</strong> on {{ previous_result.taken_at.strftime('%b %d, %Y') }}. Submitting again will record a new attempt.
+</div>
+{% endif %}
 <form method="POST">
   {% for question in quiz.questions %}
-    <div class="mb-3">
-      <p><strong>{{ loop.index }}. {{ question.text }}</strong></p>
-      {% for choice in question.choices %}
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" required>
-          <label class="form-check-label">{{ choice.text }}</label>
-        </div>
-      {% endfor %}
+  <div class="mb-3">
+    <p><strong>{{ loop.index }}. {{ question.text }}</strong></p>
+    {% for choice in question.choices %}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" required>
+      <label class="form-check-label">{{ choice.text }}</label>
     </div>
+    {% endfor %}
+  </div>
   {% endfor %}
   <button type="submit" class="btn btn-warning">Submit Quiz</button>
 </form>

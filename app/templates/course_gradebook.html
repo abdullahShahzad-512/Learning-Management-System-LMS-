@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-1">Gradebook — {{ course.title }}</h2>
+<p class="mb-4">All assignment submissions and quiz results for this course.</p>
+
+<h4 class="mb-3">Assignment Submissions</h4>
+<div class="card p-0 mb-4" style="overflow:hidden;">
+<table class="table mb-0">
+  <thead><tr><th>Student</th><th>Assignment</th><th>Submitted</th><th>Grade</th><th></th></tr></thead>
+  <tbody>
+    {% for s in submissions %}
+      <tr>
+        <td>{{ s.student.username }}</td>
+        <td>{{ s.assignment.title }}</td>
+        <td>{{ s.submitted_at.strftime('%b %d, %Y') }}</td>
+        <td>{% if s.grade %}<span class="badge bg-success">{{ s.grade }}</span>{% else %}<span class="badge bg-secondary">Ungraded</span>{% endif %}</td>
+        <td><a href="{{ url_for('main.grade_submission', submission_id=s.id) }}" class="btn btn-outline-primary btn-sm">{% if s.grade %}Review{% else %}Grade{% endif %}</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="text-center py-4">No submissions yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h4 class="mb-3">Quiz Results</h4>
+<div class="card p-0" style="overflow:hidden;">
+<table class="table mb-0">
+  <thead><tr><th>Student</th><th>Quiz</th><th>Score</th><th>Taken</th></tr></thead>
+  <tbody>
+    {% for r in quiz_results %}
+      <tr>
+        <td>{{ r.student.username }}</td>
+        <td>{{ r.quiz.title }}</td>
+        <td><span class="badge" style="background: var(--color-info); color:#fff;">{{ r.score }}/{{ r.total }}</span></td>
+        <td>{{ r.taken_at.strftime('%b %d, %Y') }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="text-center py-4">No quiz attempts yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
