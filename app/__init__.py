@@ -28,6 +28,10 @@ def create_app(config_name=None):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # Register CLI commands
+    from app import cli as cli_module
+    app.cli.add_command(cli_module.seed_admin)
+
     from app.routes import main
     app.register_blueprint(main)
 

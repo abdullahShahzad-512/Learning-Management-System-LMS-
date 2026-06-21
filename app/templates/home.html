@@ -1,12 +1,44 @@
 {% extends "base.html" %}
-
 {% block content %}
+<section class="text-center py-5">
+    <h1 style="font-size: var(--text-hero);">
+        Learn anything. Teach anyone.
+        <span style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent-pink)); -webkit-background-clip: text; background-clip: text; color: transparent;">All in one place.</span>
+    </h1>
+    <p class="mx-auto mt-3" style="max-width: 560px; font-size: var(--text-lg);">
+        A learning platform where anyone can create a course, anyone can enroll, and progress actually gets tracked — lessons, assignments, quizzes, grades.
+    </p>
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="{{ url_for('main.courses') }}" class="btn btn-warning btn-lg">Browse Courses</a>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('main.register') }}" class="btn btn-outline-light btn-lg">Get Started Free</a>
+        {% else %}
+            <a href="{{ url_for('main.create_course') }}" class="btn btn-outline-light btn-lg">Create a Course</a>
+        {% endif %}
+    </div>
+</section>
 
-<div class="text-center">
-    <h1>Welcome to Learning Management System 🚀</h1>
-    <p class="text-muted">Learn, Teach, Grow</p>
-
-    <a href="/register" class="btn btn-primary">Get Started</a>
-</div>
-
+<section class="row g-4 py-5">
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <div class="avatar-circle mb-3" style="width:56px;height:56px;font-size:1.5rem;">📚</div>
+            <h3 class="h5">Learn at your pace</h3>
+            <p>Enroll in any course, work through lessons and quizzes, and track your grades as you go.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <div class="avatar-circle mb-3" style="width:56px;height:56px;font-size:1.5rem; background: linear-gradient(135deg, var(--color-accent-pink), var(--color-accent-orange));">🎓</div>
+            <h3 class="h5">Teach what you know</h3>
+            <p>Create a course in minutes — add lessons, assignments, and auto-graded quizzes.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 p-4">
+            <div class="avatar-circle mb-3" style="width:56px;height:56px;font-size:1.5rem; background: linear-gradient(135deg, var(--color-accent-teal), var(--color-info));">📊</div>
+            <h3 class="h5">Real grading</h3>
+            <p>Assignments get graded with feedback. Quizzes are scored instantly. No guesswork.</p>
+        </div>
+    </div>
+</section>
 {% endblock %}
