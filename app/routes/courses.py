@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app import db
 from app.routes import main
@@ -32,6 +32,7 @@ def course_detail(course_id):
     is_enrolled = current_user.is_authenticated and current_user.is_enrolled_in(course)
     return render_template("course_detail.html", course=course, is_owner=is_owner, is_enrolled=is_enrolled)
 
+
 @main.route("/courses/<int:course_id>/enroll", methods=["POST"])
 @login_required
 def enroll(course_id):
@@ -52,12 +53,22 @@ def enroll(course_id):
     return redirect(url_for("main.course_detail", course_id=course_id))
 
 
+@main.route("/courses/<int:course_id>/delete", methods=["POST"])
+@login_required
+def delete_own_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    if not (current_user.is_teacher_of(course) or current_user.is_admin()):
+        abort(403)
+
+    db.session.delete(course)
+    db.session.commit()
+    flash("Course deleted.", "info")
+    return redirect(url_for("main.my_courses"))
+
+
 @main.route("/my-courses")
 @login_required
 def my_courses():
-    if current_user.role == "teacher":
-        course_list = Course.query.filter_by(teacher_id=current_user.id).all()
-    else:
-        course_list = [e.course for e in current_user.enrollments]
-
-    return render_template("my_courses.html", courses=course_list)
+    teaching = Course.query.filter_by(teacher_id=current_user.id).all()
+    enrolled = [e.course for e in current_user.enrollments]
+    return render_template("my_courses.html", teaching=teaching, enrolled=enrolled)

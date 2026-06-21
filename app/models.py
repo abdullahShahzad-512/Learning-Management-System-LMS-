@@ -1,14 +1,14 @@
 from app import db
 from flask_login import UserMixin
-from app import login_manager
-from datetime import datetime 
+from datetime import datetime
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), default="user")  # only meaningful value now: "admin"
+    role = db.Column(db.String(20), default="user")  # only meaningful value: "admin"
 
     def is_admin(self):
         return self.role == "admin"
@@ -20,10 +20,6 @@ class User(db.Model, UserMixin):
         return Enrollment.query.filter_by(student_id=self.id, course_id=course.id).first() is not None
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
@@ -31,7 +27,7 @@ class Course(db.Model):
     teacher_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    teacher = db.relationship("User", backref="courses_created")
+    teacher = db.relationship("User", backref=db.backref("courses_created", cascade="all, delete-orphan"))
 
 
 class Enrollment(db.Model):
@@ -40,8 +36,9 @@ class Enrollment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
     enrolled_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    student = db.relationship("User", backref="enrollments")
-    course = db.relationship("Course", backref="enrollments")
+    student = db.relationship("User", backref=db.backref("enrollments", cascade="all, delete-orphan"))
+    course = db.relationship("Course", backref=db.backref("enrollments", cascade="all, delete-orphan"))
+
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,7 +49,9 @@ class Lesson(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    course = db.relationship("Course", backref="lessons")
+    course = db.relationship("Course", backref=db.backref("lessons", cascade="all, delete-orphan"))
+
+
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
@@ -61,7 +60,7 @@ class Assignment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    course = db.relationship("Course", backref="assignments")
+    course = db.relationship("Course", backref=db.backref("assignments", cascade="all, delete-orphan"))
 
 
 class Submission(db.Model):
@@ -74,8 +73,8 @@ class Submission(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"), nullable=False)
 
-    student = db.relationship("User", backref="submissions")
-    assignment = db.relationship("Assignment", backref="submissions")
+    student = db.relationship("User", backref=db.backref("submissions", cascade="all, delete-orphan"))
+    assignment = db.relationship("Assignment", backref=db.backref("submissions", cascade="all, delete-orphan"))
 
 
 class Quiz(db.Model):
@@ -84,7 +83,7 @@ class Quiz(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("course.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    course = db.relationship("Course", backref="quizzes")
+    course = db.relationship("Course", backref=db.backref("quizzes", cascade="all, delete-orphan"))
 
 
 class Question(db.Model):
@@ -92,7 +91,7 @@ class Question(db.Model):
     text = db.Column(db.String(300), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
 
-    quiz = db.relationship("Quiz", backref="questions")
+    quiz = db.relationship("Quiz", backref=db.backref("questions", cascade="all, delete-orphan"))
 
 
 class Choice(db.Model):
@@ -101,7 +100,7 @@ class Choice(db.Model):
     is_correct = db.Column(db.Boolean, default=False)
     question_id = db.Column(db.Integer, db.ForeignKey("question.id"), nullable=False)
 
-    question = db.relationship("Question", backref="choices")
+    question = db.relationship("Question", backref=db.backref("choices", cascade="all, delete-orphan"))
 
 
 class QuizResult(db.Model):
@@ -113,5 +112,5 @@ class QuizResult(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
 
-    student = db.relationship("User", backref="quiz_results")
-    quiz = db.relationship("Quiz", backref="results")
+    student = db.relationship("User", backref=db.backref("quiz_results", cascade="all, delete-orphan"))
+    quiz = db.relationship("Quiz", backref=db.backref("results", cascade="all, delete-orphan"))

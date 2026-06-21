@@ -6,11 +6,6 @@ class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=80)])
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
-    role = SelectField(
-        "I am a...",
-        choices=[("student", "Student"), ("teacher", "Teacher")],
-        validators=[DataRequired()]
-    )
     submit = SubmitField("Register")
 
 class LoginForm(FlaskForm):

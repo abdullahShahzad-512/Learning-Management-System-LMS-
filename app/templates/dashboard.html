@@ -1,11 +1,38 @@
 {% extends "base.html" %}
-
 {% block content %}
+<h2 class="mb-1">Welcome back, {{ current_user.username }} 👋</h2>
+<p class="mb-4">Here's a quick look at where you stand.</p>
 
-<h2>Learning Management System Dashboard</h2>
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card p-4">
+      <p style="font-size: var(--text-sm); color: var(--color-ink-muted); margin:0;">Teaching</p>
+      <h3 style="font-size:2rem; font-weight:800; margin:0;">{{ teaching_count }}</h3>
+      <a href="{{ url_for('main.my_courses') }}" class="btn btn-outline-primary btn-sm mt-3">View courses</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-4">
+      <p style="font-size: var(--text-sm); color: var(--color-ink-muted); margin:0;">Enrolled</p>
+      <h3 style="font-size:2rem; font-weight:800; margin:0;">{{ enrolled_count }}</h3>
+      <a href="{{ url_for('main.my_courses') }}" class="btn btn-outline-primary btn-sm mt-3">View courses</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-4">
+      <p style="font-size: var(--text-sm); color: var(--color-ink-muted); margin:0;">Browse</p>
+      <h3 style="font-size:1.1rem; font-weight:700; margin:0;">Find something new</h3>
+      <a href="{{ url_for('main.courses') }}" class="btn btn-outline-primary btn-sm mt-3">All courses</a>
+    </div>
+  </div>
+</div>
 
-<p>Welcome, you are logged in 🎉</p>
+{% if current_user.is_admin() %}
+  <div class="card p-4 mb-4" style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));">
+    <p style="color:#fff; margin:0 0 0.5rem;">You're an admin on this platform.</p>
+    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light btn-sm" style="width:fit-content;">Open Admin Panel</a>
+  </div>
+{% endif %}
 
-<a href="/logout" class="btn btn-danger">Logout</a>
-
+<a href="{{ url_for('main.create_course') }}" class="btn btn-warning">+ Create a Course</a>
 {% endblock %}
