@@ -1,29 +1,153 @@
 {% extends "base.html" %}
+
+{% block title %}Course Catalog{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">All Courses</h2>
-    {% if current_user.is_authenticated %}<a href="{{ url_for('main.create_course') }}" class="btn btn-warning">+ Create Course</a>{% endif %}
+
+<style>
+  .card-lift {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+</style>
+
+<div class="relative flex min-h-screen w-full flex-col bg-background overflow-x-hidden">
+  <div class="layout-container flex h-full grow flex-col">
+ 
+<main class="flex-1 pt-8 pb-12 px-6 lg:px-10 max-w-container-max mx-auto w-full">
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+    <div>
+      <h1 class="text-on-surface text-4xl font-black leading-tight tracking-tight">
+        All Courses
+      </h1>
+      <p class="text-on-surface-variant mt-2">
+        Discover your next learning milestone from our curated catalog.
+      </p>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('main.create_course') }}"
+       class="primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-white font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all no-underline">
+      <span class="material-symbols-outlined">add</span>
+      <span>Create Course</span>
+    </a>
+    {% endif %}
+  </div>
+
+  {% if courses %}
+
+  <!-- Course Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+    {% for course in courses %}
+    <article class="card-lift bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex flex-col h-full">
+
+      <!-- Course Image -->
+      <div class="relative mb-6">
+        <div class="w-full aspect-[16/10] rounded-xl bg-surface-container overflow-hidden">
+          <div class="w-full h-full bg-cover bg-center"
+               style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuAkwfzBGzalX4EnOYeFDWAWuCnnw11kegKQus7erQuH05R8eNGZJiY1-xjSaVkAH4ZcyVyzZPT-Qt88TQaVAGpsGgvwgntEF0KQZkok9kuBgzR-_Z2VHFXBGmvV5s7PAjhcxSll9-tIIycwOC8swcj3Jw1TcB01Z-W2tMO-g6F5EPjV0hr81PZ1WozuDrFdc6dFRo80E0lLB3wpBPOwhFO1EK32fGNHFhQLgicfr4yUNUrNaWcC_oDfSsm9U_nEx2cjXrPeGBoYGpI')">
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher -->
+      <div class="flex items-center gap-3 mb-4">
+
+        <div class="size-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">
+          {% if course.teacher %}
+            {{ course.teacher.username[0]|upper }}
+          {% else %}
+            ?
+          {% endif %}
+        </div>
+
+        <span class="text-on-surface-variant text-sm font-medium">
+          {% if course.teacher %}
+            @{{ course.teacher.username }}
+          {% else %}
+            Unknown Instructor
+          {% endif %}
+        </span>
+
+      </div>
+
+      <!-- Title -->
+      <h3 class="text-on-surface text-xl font-bold mb-3 leading-snug">
+        {{ course.title }}
+      </h3>
+
+      <!-- Description -->
+      <p class="text-on-surface-variant text-sm mb-6 flex-grow">
+        {% if course.description %}
+          {{ course.description|truncate(100) }}
+        {% else %}
+          No description available.
+        {% endif %}
+      </p>
+
+      <!-- Button -->
+      <a href="{{ url_for('main.course_detail', course_id=course.id) }}"
+         class="w-full border-2 border-primary text-primary font-bold h-11 rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center no-underline">
+        View Course
+      </a>
+
+    </article>
+    {% endfor %}
+
+  </div>
+
+  {% else %}
+
+  <!-- Empty State -->
+  <div class="text-center py-20">
+    <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">
+      school
+    </span>
+
+    <h2 class="text-2xl font-bold text-on-surface mb-3">
+      No courses available
+    </h2>
+
+    <p class="text-on-surface-variant mb-6">
+      There are currently no courses in the catalog.
+    </p>
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('main.create_course') }}"
+       class="primary-gradient inline-flex items-center gap-2 rounded-xl px-6 py-3 text-white font-bold no-underline">
+      <span class="material-symbols-outlined">add</span>
+      Create First Course
+    </a>
+    {% endif %}
+  </div>
+
+  {% endif %}
+
+</main>
+  </div>
 </div>
 
-<div class="row g-4">
-  {% for course in courses %}
-    <div class="col-md-4 stagger-item">
-      <div class="card h-100 p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <div class="avatar-circle" style="width:32px;height:32px;font-size:0.8rem;">{{ course.teacher.username[0]|upper }}</div>
-          <span style="font-size: var(--text-sm); color: var(--color-ink-muted);">{{ course.teacher.username }}</span>
-        </div>
-        <h5 class="card-title">{{ course.title }}</h5>
-        <p class="card-text" style="font-size: var(--text-sm);">{{ (course.description or "")[:100] }}{% if course.description and course.description|length > 100 %}…{% endif %}</p>
-        <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm mt-auto">View Course</a>
-      </div>
-    </div>
-  {% else %}
-    <div class="text-center py-5">
-      <h4>No courses yet</h4>
-      <p>Be the first to create one.</p>
-      {% if current_user.is_authenticated %}<a href="{{ url_for('main.create_course') }}" class="btn btn-warning">+ Create a Course</a>{% endif %}
-    </div>
-  {% endfor %}
-</div>
+<script>
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('header');
+
+  if (!header) return;
+
+  if (window.scrollY > 10) {
+    header.classList.add('shadow-md');
+  } else {
+    header.classList.remove('shadow-md');
+  }
+});
+</script>
+
 {% endblock %}

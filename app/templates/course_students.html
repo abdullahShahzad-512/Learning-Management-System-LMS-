@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-1">{{ course.title }} — Enrolled Students</h2>
+<p class="mb-4">{{ enrollments|length }} student{{ 's' if enrollments|length != 1 }} enrolled.</p>
+
+<div class="card p-0" style="overflow:hidden;">
+<table class="table mb-0">
+  <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th></tr></thead>
+  <tbody>
+    {% for e in enrollments %}
+      <tr>
+        <td class="d-flex align-items-center gap-2">
+          <div class="avatar-circle" style="width:28px;height:28px;font-size:0.7rem;">{{ e.student.username[0]|upper }}</div>
+          {{ e.student.username }}
+        </td>
+        <td>{{ e.student.email }}</td>
+        <td>{{ e.enrolled_at.strftime('%b %d, %Y') }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="3" class="text-center py-4">No students enrolled yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

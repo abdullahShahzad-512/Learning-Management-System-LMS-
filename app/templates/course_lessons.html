@@ -3,17 +3,20 @@
 <h2>{{ course.title }} — Lessons</h2>
 
 {% if is_owner %}
-  <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="btn btn-warning mb-3">+ Add Lesson</a>
+<a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="btn btn-warning mb-3">+ Add Lesson</a>
 {% endif %}
 
 <ul class="list-group">
   {% for lesson in lessons %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <div>
       {{ lesson.title }}
-      <a href="{{ url_for('main.view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm">View</a>
-    </li>
+      {% if (now - lesson.created_at).days < 3 %}<span class="badge bg-success ms-2">New</span>{% endif %}
+    </div>
+    <a href="{{ url_for('main.view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+  </li>
   {% else %}
-    <li class="list-group-item">No lessons added yet.</li>
+  <li class="list-group-item">No lessons added yet.</li>
   {% endfor %}
 </ul>
 {% endblock %}

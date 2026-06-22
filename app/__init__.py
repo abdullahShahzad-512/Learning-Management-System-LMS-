@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -34,5 +35,9 @@ def create_app(config_name=None):
 
     from app.routes import main
     app.register_blueprint(main)
+
+    @app.context_processor
+    def inject_now():
+        return {"now": datetime.utcnow()}
 
     return app

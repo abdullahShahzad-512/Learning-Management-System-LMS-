@@ -4,6 +4,7 @@ from app import db
 from app.routes import main
 from app.models import Course, Assignment, Submission
 from app.forms import AssignmentForm, SubmissionForm, GradeForm
+from datetime import datetime
 
 
 
@@ -75,3 +76,17 @@ def grade_submission(submission_id):
         return redirect(url_for("main.assignment_detail", assignment_id=submission.assignment_id))
 
     return render_template("grade_submission.html", form=form, submission=submission)
+    
+@main.route("/courses/<int:course_id>/assignments")
+@login_required
+def course_assignments(course_id):
+    course = Course.query.get_or_404(course_id)
+    is_owner = current_user.is_teacher_of(course)
+    is_enrolled = current_user.is_enrolled_in(course)
+
+    if not (is_owner or is_enrolled):
+        flash("You must enroll in this course to view its assignments.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    assignments = Assignment.query.filter_by(course_id=course.id).order_by(Assignment.created_at.desc()).all()
+    return render_template("course_assignment.html", course=course, assignments=assignments, is_owner=is_owner, now=datetime.utcnow())

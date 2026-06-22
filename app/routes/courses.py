@@ -72,3 +72,28 @@ def my_courses():
     teaching = Course.query.filter_by(teacher_id=current_user.id).all()
     enrolled = [e.course for e in current_user.enrollments]
     return render_template("my_courses.html", teaching=teaching, enrolled=enrolled)
+
+@main.route("/courses/<int:course_id>/unenroll", methods=["POST"])
+@login_required
+def unenroll(course_id):
+    course = Course.query.get_or_404(course_id)
+    enrollment = Enrollment.query.filter_by(student_id=current_user.id, course_id=course.id).first()
+
+    if not enrollment:
+        flash("You're not enrolled in this course.", "info")
+        return redirect(url_for("main.course_detail", course_id=course_id))
+
+    db.session.delete(enrollment)
+    db.session.commit()
+    flash(f"You've unenrolled from {course.title}.", "info")
+    return redirect(url_for("main.my_courses"))
+
+@main.route("/courses/<int:course_id>/students")
+@login_required
+def course_students(course_id):
+    course = Course.query.get_or_404(course_id)
+    if not current_user.is_teacher_of(course):
+        abort(403)
+
+    enrollments = Enrollment.query.filter_by(course_id=course.id).order_by(Enrollment.enrolled_at.desc()).all()
+    return render_template("course_students.html", course=course, enrollments=enrollments)

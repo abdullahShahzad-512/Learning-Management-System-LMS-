@@ -4,22 +4,40 @@ from app.routes import main
 from app.models import Course, Submission, Assignment, Quiz, QuizResult
 
 
-@main.route("/my-grades")
+@main.route("/my-grades/<int:course_id>")
 @login_required
-def my_grades():
+def my_grades(course_id):
+    course = Course.query.get_or_404(course_id)
+    if not current_user.is_enrolled_in(course):
+        abort(403)
+
     submissions = (
         Submission.query
-        .filter_by(student_id=current_user.id)
+        .join(Assignment, Submission.assignment_id == Assignment.id)
+        .filter(
+            Assignment.course_id == course_id,
+            Submission.student_id == current_user.id
+        )
         .order_by(Submission.submitted_at.desc())
         .all()
     )
+
     quiz_results = (
         QuizResult.query
-        .filter_by(student_id=current_user.id)
+        .join(Quiz, QuizResult.quiz_id == Quiz.id)
+        .filter(
+            Quiz.course_id == course_id,
+            QuizResult.student_id == current_user.id
+        )
         .order_by(QuizResult.taken_at.desc())
         .all()
     )
-    return render_template("my_grades.html", submissions=submissions, quiz_results=quiz_results)
+
+    return render_template(
+        "my_grades.html",
+        submissions=submissions,
+        quiz_results=quiz_results
+    )
 
 
 @main.route("/courses/<int:course_id>/gradebook")

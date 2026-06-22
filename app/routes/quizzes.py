@@ -4,6 +4,7 @@ from app import db
 from app.routes import main
 from app.models import Course, Quiz, Question, Choice, QuizResult
 from app.forms import QuizForm, QuestionForm
+from datetime import datetime
 
 
 @main.route("/courses/<int:course_id>/quizzes/create", methods=["GET", "POST"])
@@ -69,7 +70,7 @@ def take_quiz(quiz_id):
         db.session.add(QuizResult(score=score, total=len(quiz.questions), student_id=current_user.id, quiz_id=quiz.id))
         db.session.commit()
         flash(f"Quiz submitted! You scored {score}/{len(quiz.questions)}", "success")
-        return redirect(url_for("main.my_grades"))
+        return redirect(url_for("main.my_grades", course_id=course.id))
 
     previous_result = (
         QuizResult.query
@@ -78,3 +79,17 @@ def take_quiz(quiz_id):
         .first()
     )
     return render_template("take_quiz.html", quiz=quiz, previous_result=previous_result)
+
+@main.route("/courses/<int:course_id>/quizzes")
+@login_required
+def course_quizzes(course_id):
+    course = Course.query.get_or_404(course_id)
+    is_owner = current_user.is_teacher_of(course)
+    is_enrolled = current_user.is_enrolled_in(course)
+
+    if not (is_owner or is_enrolled):
+        flash("You must enroll in this course to view its quizzes.", "danger")
+        return redirect(url_for("main.course_detail", course_id=course.id))
+
+    quizzes = Quiz.query.filter_by(course_id=course.id).order_by(Quiz.created_at.desc()).all()
+    return render_template("course_quizzes.html", course=course, quizzes=quizzes, is_owner=is_owner, now=datetime.utcnow())

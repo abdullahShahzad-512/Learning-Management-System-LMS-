@@ -1,34 +1,291 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card p-4 mb-4"
-    style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));">
-    <h2 class="mb-1" style="color:#fff;">{{ course.title }}</h2>
-    <p style="color: oklch(95% 0.02 290 / 0.9); margin:0;">Taught by {{ course.teacher.username }}</p>
-</div>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#fcf8ff",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-primary-fixed": "#0f0069",
+                        "outline": "#777587",
+                        "primary": "#3525cd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-bright": "#fcf8ff",
+                        "on-surface-variant": "#464555",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "tertiary-container": "#a44100",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#25005a",
+                        "inverse-surface": "#302f39",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "on-primary-container": "#dad7ff",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c7c4d8",
+                        "on-background": "#1b1b24",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-tint": "#4d44e3",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "inverse-on-surface": "#f3effc",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary": "#7e3000",
+                        "secondary-fixed": "#eaddff",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f0ecf9",
+                        "primary-fixed": "#e2dfff",
+                        "primary-container": "#4f46e5",
+                        "surface-dim": "#dcd8e5",
+                        "surface-variant": "#e4e1ee",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1b1b24",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdbcc",
+                        "secondary-container": "#8a4cfc",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf8ff",
+                        "secondary": "#712ae2",
+                        "on-tertiary-fixed-variant": "#7b2f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.125rem", // 18px radius
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "inter": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f9fafb;
+            font-family: 'Inter', sans-serif;
+        }
 
-{% if is_owner %}
-<span class="badge bg-primary">You teach this course</span>
-<div class="mt-2">
-    <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add
-        Lesson</a>
-    <a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add
-        Assignment</a>
-    <a href="{{ url_for('main.create_quiz', course_id=course.id) }}" class="btn btn-outline-light btn-sm">+ Add Quiz</a>
-    <a href="{{ url_for('main.course_gradebook', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">View Gradebook</a>
-</div>
-<form method="POST" action="{{ url_for('main.delete_own_course', course_id=course.id) }}" class="d-inline"
-    onsubmit="return confirm('Delete this course? This cannot be undone.');">
-    <button type="submit" class="btn btn-outline-danger btn-sm">Delete Course</button>
-</form>
-{% elif is_enrolled %}
-<span class="badge bg-success">You're enrolled</span>
-{% elif current_user.is_authenticated %}
-<form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}">
-    <button type="submit" class="btn btn-warning">Enroll in this Course</button>
-</form>
-{% else %}
-<a href="{{ url_for('main.login') }}" class="btn btn-outline-light">Login to enroll</a>
-{% endif %}
+        .brand-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
 
-<a href="{{ url_for('main.course_lessons', course_id=course.id) }}" class="btn btn-outline-light mt-2">View Lessons</a>
-{% endblock %}
+        .glass-overlay {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .soft-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .soft-shadow-hover:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-4px);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+
+
+    <header
+        class="sticky top-0 z-50 glass-overlay border-b border-outline-variant px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('main.courses') }}"
+                class="flex items-center justify-center p-2 rounded-xl hover:bg-surface-container transition-colors">
+                <span class="material-symbols-outlined text-on-surface">
+                    arrow_back
+                </span>
+            </a>
+            <h1 class="text-title-lg text-on-surface">Course Details</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="size-8 rounded-full bg-primary-fixed flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary-fixed text-sm">person</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Full-width Banner Card -->
+        <section
+            class="relative w-full h-[320px] rounded-2xl overflow-hidden brand-gradient soft-shadow transition-all duration-300 flex items-center justify-center">
+
+            <div class="text-center px-6 max-w-3xl">
+                <!-- Course Title -->
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-3">
+                    {{ course.title }}
+                </h2>
+
+                <!-- Teacher Name -->
+                <p class="text-sm md:text-base text-white/80 italic mb-4">
+                    Taught by @{{ course.teacher.username }}
+                </p>
+
+                <!-- Course Description -->
+                <p class="text-base md:text-lg text-white/90 leading-relaxed">
+                    {{ course.description }}
+                </p>
+            </div>
+        </section>
+        <div class="space-y-16">
+            {% if is_owner %}
+            <div class="space-y-4">
+                <h3 class="text-label-caps text-on-surface-variant uppercase border-b border-outline-variant pb-2">
+                    Teacher View (Owner)</h3>
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-2xl soft-shadow border border-outline-variant flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <span
+                            class="px-4 py-1.5 rounded-full bg-primary-fixed text-primary text-sm font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                            You teach this course
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="{{ url_for('main.course_students', course_id=course.id) }}"
+                            class="flex items-center gap-2 px-5 py-2 rounded-xl border border-outline text-on-surface hover:bg-surface-container transition-all">
+                            <span class="material-symbols-outlined text-[20px]">groups</span>
+                            <span>Students ({{ course.enrollments|length }})</span>
+                        </a>
+
+                        <a href="{{ url_for('main.course_gradebook', course_id=course.id) }}"
+                            class="flex items-center gap-2 px-5 py-2 rounded-xl border border-outline text-on-surface hover:bg-surface-container transition-all">
+                            <span class="material-symbols-outlined text-[20px]">assignment</span>
+                            <span>Gradebook</span>
+                        </a>
+
+                        <a href="{{ url_for('main.create_quiz', course_id=course.id) }}"
+                            class="flex items-center gap-2 px-5 py-2 rounded-xl border border-outline text-on-surface hover:bg-surface-container transition-all">
+                            <span class="material-symbols-outlined text-[20px]">quiz</span>
+                            <span>Add Quiz</span>
+                        </a>
+
+                        <a href="{{ url_for('main.create_assignment', course_id=course.id) }}"
+                            class="flex items-center gap-2 px-5 py-2 rounded-xl border border-outline text-on-surface hover:bg-surface-container transition-all">
+                            <span class="material-symbols-outlined text-[20px]">assignment</span>
+                            <span>Add Assignment</span>
+                        </a>
+
+                        <a href="{{ url_for('main.create_lesson', course_id=course.id) }}"
+                            class="flex items-center gap-2 px-5 py-2 rounded-xl border border-outline text-on-surface hover:bg-surface-container transition-all">
+                            <span class="material-symbols-outlined text-[20px]">menu_book</span>
+                            <span>Add Lesson</span>
+                        </a>
+                        <form method="POST" action="{{ url_for('main.delete_own_course', course_id=course.id) }}"
+                            onsubmit="return confirm('Delete this course? This cannot be undone.');">
+
+                            <button type="submit"
+                                class="px-5 py-2 rounded-xl border border-error/50 text-error hover:bg-error-container/20 transition-all font-medium">
+                                Delete Course
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {% elif is_enrolled %}
+            <div class="space-y-4">
+                <h3 class="text-label-caps text-on-surface-variant uppercase border-b border-outline-variant pb-2">
+                    Student View</h3>
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-2xl soft-shadow border border-outline-variant flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <span
+                            class="px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            You're enrolled
+                        </span>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.unenroll', course_id=course.id) }}"
+                        class="d-inline ms-2"
+                        onsubmit="return confirm('Unenroll from this course? Your submissions and quiz results will remain on record.');">
+                        <button
+                            class="px-6 py-2.5 rounded-xl border-2 border-error text-error font-bold hover:bg-error-container/20 transition-all">
+                            Unenroll
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% elif current_user.is_authenticated %}
+            <div class="space-y-4">
+
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-2xl soft-shadow border border-outline-variant flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-1">
+                        <p class="text-body-sm text-on-surface-variant">For access of all materials</p>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}">
+
+                        <button
+                            class="relative p-[2px] rounded-xl bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] overflow-hidden group">
+                            <div
+                                class="px-8 py-3 bg-surface-container-lowest rounded-[10px] group-hover:bg-transparent transition-colors duration-200">
+                                <span
+                                    class="relative text-primary group-hover:text-white font-bold tracking-wide">Enroll
+                                    in
+                                    this Course</span>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <a href="{{ url_for('main.login') }}" class="btn btn-outline-light">Login to enroll</a>
+            {% endif %}
+
+        </div>
+        <!-- Tabbed Navigation -->
+        <nav class="flex flex-col md:flex-row items-center justify-center gap-4 pt-10">
+            <a href="{{ url_for('main.course_lessons', course_id=course.id) }}"
+                class="w-full md:w-[200px] py-4 rounded-full border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span>Lessons</span>
+            </a>
+
+            <a href="{{ url_for('main.course_assignments', course_id=course.id) }}"
+                class="w-full md:w-[200px] py-4 rounded-full border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">task</span>
+                <span>Assignments</span>
+            </a>
+
+            <a href="{{ url_for('main.course_quizzes', course_id=course.id) }}"
+                class="w-full md:w-[200px] py-4 rounded-full border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">quiz</span>
+                <span>Quizzes</span>
+            </a>
+            {% if is_enrolled %}
+            <a href="{{ url_for('main.my_grades', course_id=course.id) }}"
+            class="w-full md:w-[200px] py-4 rounded-full border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">assignment</span>
+            <span>Grades</span>
+        </a>
+        {% endif %}
+    </nav>
+    
+    
+    
+    <script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+        </script>
+        {% endblock %}
