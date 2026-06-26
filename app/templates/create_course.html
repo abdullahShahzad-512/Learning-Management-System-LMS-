@@ -1,23 +1,196 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Create a New Course</h2>
 
-<form method="POST">
-    {{ form.hidden_tag() }}
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "on-surface": "#1b1b24",
+                    "primary-container": "#4f46e5",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-container-highest": "#e4e1ee",
+                    "surface-container-high": "#eae6f4",
+                    "outline-variant": "#c7c4d8",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#f0ecf9",
+                    "secondary": "#712ae2",
+                    "primary": "#3525cd",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#464555",
+                    "surface-bright": "#fcf8ff",
+                    "surface-container-low": "#f5f2ff",
+                    "outline": "#777587",
+                    "surface": "#fcf8ff",
+                    "background": "#fcf8ff",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "card": "18px",
+                    "full": "9999px"
+                },
+                fontFamily: {
+                    "display-lg": ["Inter"],
+                    "body-base": ["Inter"],
+                    "title-lg": ["Inter"],
+                },
+                fontSize: {
+                    "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                    "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                    "body-base": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                    "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                    "title-lg": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .primary-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #712ae2 100%);
+    }
 
-    <div class="mb-3">
-        {{ form.title.label }}
-        {{ form.title(class="form-control") }}
-        {% for error in form.title.errors %}
-            <div class="text-danger">{{ error }}</div>
-        {% endfor %}
+    input:focus,
+    textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="min-h-screen flex items-center justify-center py-12 px-4" style="background: #fcf8ff;">
+    <div class="w-full max-w-[640px]">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-display-lg-mobile md:text-display-lg font-extrabold text-on-surface mb-2">
+                Create a New Course
+            </h1>
+            <p class="text-body-base text-on-surface-variant">
+                Fill in the details below to launch your educational journey.
+            </p>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-white rounded-card shadow-md p-8 border border-gray-100">
+            <form method="POST" id="course-form" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <!-- Course Title -->
+                <div class="mb-6">
+                    {{ form.title.label(class="block text-sm font-semibold text-on-surface mb-2 px-1") }}
+                    {{ form.title(
+                    class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-body-base
+                    transition-all focus:border-primary",
+                    placeholder="e.g. Advanced UX Design Principles"
+                    ) }}
+                    {% for error in form.title.errors %}
+                    <p class="text-red-500 text-sm mt-1 px-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Course Description -->
+                <div class="mb-6">
+                    {{ form.description.label(class="block text-sm font-semibold text-on-surface mb-2 px-1") }}
+                    {{ form.description(
+                    class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-body-base
+                    transition-all focus:border-primary resize-none",
+                    rows=4,
+                    placeholder="Describe what students will learn in this course..."
+                    ) }}
+                </div>
+
+                <!-- Thumbnail Upload -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-on-surface mb-2 px-1">
+                        {{ form.thumbnail.label.text }}
+                    </label>
+
+                    <div class="flex items-center justify-center w-full">
+                        <label
+                            class="flex flex-col w-full border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-all duration-200">
+
+                            <div class="flex flex-col items-center justify-center pt-6 pb-6">
+                                <span class="material-symbols-outlined text-4xl text-outline mb-2">image</span>
+                                <p class="text-sm text-on-surface-variant">
+                                    Click to upload thumbnail
+                                </p>
+                                <p class="text-xs text-outline mt-1">
+                                    JPG, PNG, WEBP
+                                </p>
+                            </div>
+
+                            {{ form.thumbnail(class="hidden", id="thumbnailInput") }}
+
+                        </label>
+                    </div>
+
+                    <!-- Preview -->
+                    <div id="thumbnailPreview" class="hidden mt-3">
+                        <p class="text-green-600 text-sm font-medium mb-2">
+                            ✅ Image selected: <span id="thumbnailName"></span>
+                        </p>
+                        <img id="thumbnailImg" class="rounded-xl w-full max-h-48 object-cover border" />
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col items-center gap-4">
+                    {{ form.submit(
+                    class="w-full primary-gradient text-white py-3 rounded-xl font-bold text-lg shadow-lg
+                    hover:shadow-xl hover:-translate-y-1 transition-all active:scale-95 cursor-pointer",
+                    id="submit-btn"
+                    ) }}
+                    <a href="{{ url_for('main.dashboard') }}"
+                        class="text-primary font-semibold text-sm hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">arrow_back</span>
+                        Back to Dashboard
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
     </div>
+</div>
 
-    <div class="mb-3">
-        {{ form.description.label }}
-        {{ form.description(class="form-control", rows=4) }}
-    </div>
+<script>
+    document.getElementById('course-form').addEventListener('submit', function (e) {
+        // Do NOT call e.preventDefault() here — let the form POST to Flask normally
+        // Just give visual feedback while the page is submitting
+        const btn = document.getElementById('submit-btn');
+        btn.value = 'Creating...';
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        btn.disabled = true;
+        // Form continues to submit to Flask naturally
+    });
+</script>
+<script>
+const thumbInput = document.getElementById("thumbnailInput");
+const previewBox = document.getElementById("thumbnailPreview");
+const thumbName = document.getElementById("thumbnailName");
+const thumbImg = document.getElementById("thumbnailImg");
 
-    {{ form.submit(class="btn btn-warning") }}
-</form>
+thumbInput.addEventListener("change", function () {
+    const file = this.files[0];
+
+    if (file) {
+        thumbName.textContent = file.name;
+        previewBox.classList.remove("hidden");
+
+        const url = URL.createObjectURL(file);
+        thumbImg.src = url;
+    }
+});
+</script>
+
 {% endblock %}

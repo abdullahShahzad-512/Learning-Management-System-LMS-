@@ -1,23 +1,168 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ course.title }} — Assignments</h2>
 
-{% if is_owner %}
-  <a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="btn btn-warning mb-3">+ Add Assignment</a>
-{% endif %}
+<style>
+.assignment-card {
+    transition: all 0.25s ease;
+}
 
-<ul class="list-group">
-  {% for a in assignments %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div>
-        {{ a.title }}
-        {% if (now - a.created_at).days < 3 %}<span class="badge bg-success ms-2">New</span>{% endif %}
-        {% if a.due_date %}<span style="font-size: var(--text-sm); color: var(--color-ink-muted);"> — Due {{ a.due_date.strftime('%b %d, %Y') }}</span>{% endif %}
-      </div>
-      <a href="{{ url_for('main.assignment_detail', assignment_id=a.id) }}" class="btn btn-outline-primary btn-sm">View</a>
-    </li>
-  {% else %}
-    <li class="list-group-item">No assignments yet.</li>
-  {% endfor %}
-</ul>
+.assignment-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 20px 25px -5px rgba(0,0,0,.08),
+        0 10px 10px -5px rgba(0,0,0,.04);
+}
+</style>
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- Back Button -->
+    <a href="{{ url_for('main.course_detail', course_id=course.id) }}"
+       class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-6">
+
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Course
+
+    </a>
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+
+        <div>
+            <p class="text-indigo-600 font-semibold mb-2">
+                📝 Course Assignments
+            </p>
+
+            <h1 class="text-4xl font-extrabold text-slate-800">
+                {{ course.title }}
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                {{ assignments|length }} assignment(s) available
+            </p>
+        </div>
+
+        {% if is_owner %}
+        <a href="{{ url_for('main.create_assignment', course_id=course.id) }}"
+           class="mt-4 md:mt-0 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition">
+
+            ➕ Add Assignment
+
+        </a>
+        {% endif %}
+
+    </div>
+
+    <!-- Assignment List -->
+    {% if assignments %}
+
+    <div class="space-y-5">
+
+        {% for a in assignments %}
+
+        <div class="assignment-card bg-white rounded-3xl p-6 shadow-md border border-slate-100">
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+
+                <!-- Left Section -->
+                <div class="flex items-start gap-5">
+
+                    <!-- Assignment Icon -->
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
+
+                        <span class="material-symbols-outlined text-indigo-600">
+                            assignment
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        <div class="flex items-center gap-3 flex-wrap">
+
+                            <h3 class="text-xl font-bold text-slate-800">
+                                {{ a.title }}
+                            </h3>
+
+                            {% if (now - a.created_at).days < 3 %}
+                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                                NEW
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="flex flex-wrap gap-4 mt-3 text-sm text-slate-500">
+
+                            <span>
+                                📅 Created:
+                                {{ a.created_at.strftime('%d %b %Y') }}
+                            </span>
+
+                            {% if a.due_date %}
+                            <span class="text-orange-600 font-medium">
+                                ⏳ Due:
+                                {{ a.due_date.strftime('%d %b %Y') }}
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Right Section -->
+                <div class="flex gap-3">
+
+                    <a href="{{ url_for('main.assignment_detail', assignment_id=a.id) }}"
+                       class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
+
+                        View Assignment
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty State -->
+
+    <div class="bg-white rounded-3xl p-12 text-center shadow-md">
+
+        <div class="text-7xl mb-4">
+            📝
+        </div>
+
+        <h2 class="text-2xl font-bold text-slate-800 mb-3">
+            No Assignments Yet
+        </h2>
+
+        <p class="text-slate-500 mb-6">
+            This course doesn't contain any assignments yet.
+        </p>
+
+        {% if is_owner %}
+        <a href="{{ url_for('main.create_assignment', course_id=course.id) }}"
+           class="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold">
+
+            Create First Assignment
+
+        </a>
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
 {% endblock %}

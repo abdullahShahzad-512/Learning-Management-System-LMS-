@@ -1,28 +1,95 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Add Lesson to: {{ course.title }}</h2>
+{%extends "base.html"%}
+{%block content%}
+<form method="POST" enctype="multipart/form-data" class="space-y-lg">
 
-<form method="POST">
     {{ form.hidden_tag() }}
 
-    <div class="mb-3">
-        {{ form.title.label }}
-        {{ form.title(class="form-control") }}
-        {% for error in form.title.errors %}
-            <div class="text-danger">{{ error }}</div>
-        {% endfor %}
+    <!-- Lesson Title -->
+    <div class="space-y-sm">
+        <label class="block font-label-caps text-label-caps text-on-surface-variant">
+            {{ form.title.label.text }}
+        </label>
+        {{ form.title(
+            class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-base text-body-base form-input-focus transition-all duration-200",
+            placeholder="e.g. Introduction to Design Tokens"
+        ) }}
     </div>
 
-    <div class="mb-3">
-        {{ form.video_url.label }}
-        {{ form.video_url(class="form-control", placeholder="https://...") }}
+    <!-- Video Upload -->
+    <div class="space-y-sm">
+        <label class="block font-label-caps text-label-caps text-on-surface-variant">
+            {{ form.video.label.text }}
+        </label>
+
+        <div class="flex items-center justify-center w-full">
+            <label class="flex flex-col w-full border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-all duration-200">
+
+                <div class="flex flex-col items-center justify-center pt-6 pb-6">
+                    <span class="material-symbols-outlined text-4xl text-outline mb-2">upload</span>
+                    <p class="text-sm text-on-surface-variant">
+                        Click to upload video
+                    </p>
+                    <p class="text-xs text-outline mt-1">
+                        MP4, MOV, MKV (Max recommended: 100MB)
+                    </p>
+                </div>
+
+                {{ form.video(class="hidden") }}
+
+            </label>
+        </div>
+    </div>
+    <div id="videoPreview" class="hidden mt-3 p-3 bg-surface-container-low rounded-xl">
+    <p class="text-sm text-green-600 font-medium">
+        ✅ Video selected: <span id="videoName"></span>
+    </p>
+
+    <!-- Optional video preview -->
+    <video id="videoPlayer" class="mt-3 rounded-lg w-full hidden" controls></video>
+</div>
+
+    <!-- Lesson Content -->
+    <div class="space-y-sm">
+        <label class="block font-label-caps text-label-caps text-on-surface-variant">
+            {{ form.content.label.text }}
+        </label>
+        {{ form.content(
+            rows=4,
+            class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-base text-body-base form-input-focus transition-all duration-200 resize-none",
+            placeholder="Briefly describe the learning objectives for this lesson..."
+        ) }}
     </div>
 
-    <div class="mb-3">
-        {{ form.content.label }}
-        {{ form.content(class="form-control", rows=4) }}
+    <!-- Action Buttons -->
+    <div class="pt-md flex flex-col sm:flex-row gap-md">
+
+        {{ form.submit(
+            class="flex-grow primary-gradient text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-sm"
+        ) }}
+
+       
     </div>
 
-    {{ form.submit(class="btn btn-warning") }}
 </form>
-{% endblock %}
+<script>
+    const videoInput = document.querySelector('input[type="file"]');
+    const previewBox = document.getElementById("videoPreview");
+    const videoName = document.getElementById("videoName");
+    const videoPlayer = document.getElementById("videoPlayer");
+
+    videoInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+            // Show filename
+            videoName.textContent = file.name;
+            previewBox.classList.remove("hidden");
+
+            // Show video preview
+            const url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+            videoPlayer.classList.remove("hidden");
+        }
+    });
+</script>
+{%endblock%}

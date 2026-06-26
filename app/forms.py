@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, DateField, SelectField
 from wtforms.validators import DataRequired, Email, Length, Optional
+from flask_wtf.file import FileField, FileAllowed
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=80)])
@@ -15,15 +16,25 @@ class LoginForm(FlaskForm):
 
 
 class CourseForm(FlaskForm):
-    title = StringField("Course Title", validators=[DataRequired(), Length(min=3, max=150)])
-    description = TextAreaField("Description", validators=[Optional()])
+    title = StringField("Course Title", validators=[DataRequired()])
+    description = TextAreaField("Description")
+
+    thumbnail = FileField("Course Thumbnail", validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'webp'], "Images only!")
+    ])
+
     submit = SubmitField("Create Course")
 
 class LessonForm(FlaskForm):
-    title = StringField("Lesson Title", validators=[DataRequired(), Length(min=3, max=150)])
-    video_url = StringField("Video URL", validators=[Optional(), Length(max=300)])
-    content = TextAreaField("Lesson Notes / Content", validators=[Optional()])
+    title = StringField("Lesson Title", validators=[DataRequired()])
+    
+    video = FileField("Upload Video", validators=[
+        FileAllowed(['mp4', 'mov', 'mkv', 'avi'], "Videos only!")
+    ])
+
+    content = TextAreaField("Lesson Content")
     submit = SubmitField("Add Lesson")
+    
 class AssignmentForm(FlaskForm):
     title = StringField("Assignment Title", validators=[DataRequired(), Length(min=3, max=150)])
     description = TextAreaField("Description", validators=[Optional()])

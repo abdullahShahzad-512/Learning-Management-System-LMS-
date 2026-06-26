@@ -1,9 +1,303 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>New Quiz for {{ course.title }}</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="mb-3">{{ form.title.label }}{{ form.title(class="form-control") }}</div>
-    {{ form.submit(class="btn btn-warning") }}
-</form>
+
+<style>
+  :root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  body { background: #f1f5f9; font-family: 'Inter', sans-serif; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stagger > * {
+    opacity: 0;
+    animation: slideUp 300ms var(--ease-out) forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 40ms; }
+  .stagger > *:nth-child(2) { animation-delay: 100ms; }
+  .stagger > *:nth-child(3) { animation-delay: 160ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stagger > * { animation: none; opacity: 1; }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e8edf3;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+
+  .field-input {
+    width: 100%;
+    border: 1.5px solid #dde3ec;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #1e293b;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 150ms var(--ease-out),
+                box-shadow   150ms var(--ease-out),
+                background   150ms var(--ease-out);
+  }
+  .field-input:focus {
+    border-color: #ec4899;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(236,72,153,.10);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #db2777, #7c3aed);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(219,39,119,.30);
+    transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(219,39,119,.35); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 12px;
+    background: #fff;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1.5px solid #dde3ec;
+    transition: background 150ms var(--ease-out), transform 150ms var(--ease-out);
+  }
+  .btn-ghost:hover  { background: #f8fafc; transform: translateY(-1px); }
+  .btn-ghost:active { transform: scale(0.97); }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+
+  /* Workflow steps */
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 32px;
+    bottom: -12px;
+    width: 1.5px;
+    background: rgba(255,255,255,.2);
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    border: 1.5px solid rgba(255,255,255,.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-num.active {
+    background: #fff;
+    border-color: #fff;
+    color: #db2777;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .field-input:hover:not(:focus) { border-color: #f9a8d4; }
+  }
+</style>
+
+<div class="max-w-5xl mx-auto px-4 md:px-6 py-8">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-xs text-slate-400 mb-6">
+    <a href="{{ url_for('main.courses') }}" class="hover:text-pink-600 transition-colors">Courses</a>
+    <span>/</span>
+    <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="hover:text-pink-600 transition-colors">{{ course.title | truncate(28) }}</a>
+    <span>/</span>
+    <a href="{{ url_for('main.course_quizzes', course_id=course.id) }}" class="hover:text-pink-600 transition-colors">Quizzes</a>
+    <span>/</span>
+    <span class="text-slate-600 font-medium">Create Quiz</span>
+  </div>
+
+  <!-- Page header -->
+  <div class="flex items-center gap-4 mb-8">
+    <a href="{{ url_for('main.course_quizzes', course_id=course.id) }}"
+       class="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:-translate-y-0.5 transition-all duration-150 flex-shrink-0">
+      <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>
+    </a>
+    <div>
+      <p class="text-xs text-pink-600 font-bold uppercase tracking-widest mb-0.5">Quiz Management</p>
+      <h1 class="text-2xl font-black text-slate-800 leading-tight">Create New Quiz</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Build an assessment to evaluate your students.</p>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid lg:grid-cols-3 gap-6">
+
+    <!-- ════════════ FORM ════════════ -->
+    <div class="lg:col-span-2 stagger space-y-5">
+
+      <!-- Quiz details card -->
+      <div class="card p-7">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-pink-600" style="font-size:20px">quiz</span>
+          </div>
+          <div>
+            <h2 class="font-black text-slate-800 text-base leading-tight">Quiz Details</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Give your quiz a clear, focused title.</p>
+          </div>
+        </div>
+
+        <form method="POST" id="quiz-form" class="space-y-5">
+          {{ form.hidden_tag() }}
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              {{ form.title.label.text }}
+            </label>
+            {{ form.title(class="field-input", placeholder="e.g. Python Basics — Chapter 3 Quiz") }}
+            {% if form.title.errors %}
+            <p class="mt-2 text-xs text-red-500 flex items-center gap-1.5">
+              <span class="material-symbols-outlined" style="font-size:14px">error</span>
+              {{ form.title.errors[0] }}
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- Inline tips banner -->
+          <div class="rounded-xl bg-pink-50 border border-pink-100 p-4 flex gap-3">
+            <span class="material-symbols-outlined text-pink-500 flex-shrink-0 mt-0.5" style="font-size:18px">lightbulb</span>
+            <div>
+              <p class="text-xs font-bold text-pink-700 mb-2">Tips for a great quiz</p>
+              <ul class="space-y-1">
+                {% for tip in [
+                  'Use a short, topic-specific title.',
+                  'Add questions right after creating the quiz.',
+                  'Mix conceptual and practical questions.',
+                  'Keep it focused — one topic per quiz.'
+                ] %}
+                <li class="text-xs text-pink-600 flex items-center gap-1.5">
+                  <span class="w-1 h-1 rounded-full bg-pink-400 flex-shrink-0"></span>
+                  {{ tip }}
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-3 pt-1">
+            <button type="submit" class="btn-primary">
+              <span class="material-symbols-outlined" style="font-size:17px">add_circle</span>
+              {{ form.submit.label.text }}
+            </button>
+            <a href="{{ url_for('main.course_quizzes', course_id=course.id) }}" class="btn-ghost">
+              <span class="material-symbols-outlined" style="font-size:17px">close</span>
+              Cancel
+            </a>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+
+    <!-- ════════════ SIDEBAR ════════════ -->
+    <div class="space-y-5">
+
+      <!-- Course info -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-indigo-600" style="font-size:18px">school</span>
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-slate-800 text-sm truncate">{{ course.title }}</p>
+            <p class="text-xs text-slate-400">Current Course</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="info-row">
+            <span class="text-slate-400">Lessons</span>
+            <strong class="text-slate-700 text-xs">{{ course.lessons|length }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="text-slate-400">Students</span>
+            <strong class="text-slate-700 text-xs">{{ course.students|length }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="text-slate-400">Instructor</span>
+            <strong class="text-slate-700 text-xs">{{ course.teacher.username }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow -->
+      <div class="rounded-2xl p-6 text-white relative overflow-hidden"
+           style="background: linear-gradient(135deg, #db2777 0%, #7c3aed 100%);">
+
+        <!-- Decorative blob -->
+        <div class="absolute -top-8 -right-8 w-28 h-28 rounded-full"
+             style="background:rgba(255,255,255,.08);"></div>
+
+        <div class="relative z-10">
+          <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined text-white" style="font-size:18px">checklist</span>
+          </div>
+          <h3 class="font-black text-base mb-5">Quiz Workflow</h3>
+
+          <div class="space-y-4">
+            {% for label, icon, is_active in [
+              ('Create Quiz',            'edit_note',    True),
+              ('Add Questions',          'quiz',         False),
+              ('Students Attempt Quiz',  'groups',       False),
+              ('Review Results',         'bar_chart',    False)
+            ] %}
+            <div class="step">
+              <div class="step-num {{ 'active' if is_active else '' }}">{{ loop.index }}</div>
+              <div class="flex items-center gap-2 pt-0.5">
+                <span class="material-symbols-outlined {{ 'text-white' if is_active else 'text-white/50' }}" style="font-size:15px">{{ icon }}</span>
+                <span class="text-sm {{ 'font-bold text-white' if is_active else 'text-white/60' }}">{{ label }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 {% endblock %}

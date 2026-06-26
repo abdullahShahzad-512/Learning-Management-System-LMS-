@@ -53,8 +53,13 @@
       <!-- Course Image -->
       <div class="relative mb-6">
         <div class="w-full aspect-[16/10] rounded-xl bg-surface-container overflow-hidden">
-          <div class="w-full h-full bg-cover bg-center"
-               style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuAkwfzBGzalX4EnOYeFDWAWuCnnw11kegKQus7erQuH05R8eNGZJiY1-xjSaVkAH4ZcyVyzZPT-Qt88TQaVAGpsGgvwgntEF0KQZkok9kuBgzR-_Z2VHFXBGmvV5s7PAjhcxSll9-tIIycwOC8swcj3Jw1TcB01Z-W2tMO-g6F5EPjV0hr81PZ1WozuDrFdc6dFRo80E0lLB3wpBPOwhFO1EK32fGNHFhQLgicfr4yUNUrNaWcC_oDfSsm9U_nEx2cjXrPeGBoYGpI')">
+          <div class="w-full h-full bg-cover bg-center">
+            {% if course.thumbnail %}
+            <img src="{{ url_for('static', filename=course.thumbnail) }}" class="w-full h-full object-cover">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/default-course.jpg') }}"
+              class="w-full h-full object-cover">
+            {% endif %}
           </div>
         </div>
       </div>
@@ -117,9 +122,7 @@
       No courses available
     </h2>
 
-    <p class="text-on-surface-variant mb-6">
-      There are currently no courses in the catalog.
-    </p>
+  
 
     {% if current_user.is_authenticated %}
     <a href="{{ url_for('main.create_course') }}"

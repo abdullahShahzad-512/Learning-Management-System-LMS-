@@ -1,43 +1,352 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-4">My Grades</h2>
 
-<h4 class="mb-3">Assignments</h4>
-<div class="card p-0 mb-4" style="overflow:hidden;">
-<table class="table mb-0">
-  <thead><tr><th>Course</th><th>Assignment</th><th>Submitted</th><th>Grade</th><th>Feedback</th></tr></thead>
-  <tbody>
-    {% for s in submissions %}
-      <tr>
-        <td>{{ s.assignment.course.title }}</td>
-        <td><a href="{{ url_for('main.assignment_detail', assignment_id=s.assignment.id) }}">{{ s.assignment.title }}</a></td>
-        <td>{{ s.submitted_at.strftime('%b %d, %Y') }}</td>
-        <td>{% if s.grade %}<span class="badge bg-success">{{ s.grade }}</span>{% else %}<span class="badge bg-secondary">Pending</span>{% endif %}</td>
-        <td>{{ s.feedback or "—" }}</td>
-      </tr>
-    {% else %}
-      <tr><td colspan="5" class="text-center py-4">No assignments submitted yet.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<style>
+.grade-card{
+    transition:all .25s ease;
+}
+
+.grade-card:hover{
+    transform:translateY(-4px);
+    box-shadow:
+        0 20px 25px -5px rgba(0,0,0,.08),
+        0 10px 10px -5px rgba(0,0,0,.04);
+}
+
+.table thead{
+    background:#f8fafc;
+}
+
+.table tbody tr:hover{
+    background:#f8fafc;
+}
+
+.stat-card{
+    transition:.25s;
+}
+
+.stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 30px rgba(0,0,0,.08);
+}
+</style>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10">
+
+        <div>
+
+            <p class="text-indigo-600 font-semibold mb-2">
+                📊 Student Dashboard
+            </p>
+
+            <h1 class="text-4xl font-extrabold text-slate-800">
+                My Grades
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Track your assignments and quiz performance.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('main.dashboard') }}"
+           class="mt-5 lg:mt-0 px-5 py-3 rounded-xl border border-slate-300 hover:bg-slate-100 transition">
+
+            ← Dashboard
+
+        </a>
+
+    </div>
+
+    <!-- Statistics -->
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+
+        <div class="stat-card bg-white rounded-3xl shadow-md p-6">
+
+            <p class="text-gray-500 text-sm">
+                Assignments
+            </p>
+
+            <h2 class="text-3xl font-bold mt-2">
+                {{ submissions|length }}
+            </h2>
+
+        </div>
+
+        <div class="stat-card bg-white rounded-3xl shadow-md p-6">
+
+            <p class="text-gray-500 text-sm">
+                Quizzes
+            </p>
+
+            <h2 class="text-3xl font-bold mt-2">
+                {{ quiz_results|length }}
+            </h2>
+
+        </div>
+
+        <div class="stat-card bg-white rounded-3xl shadow-md p-6">
+
+            <p class="text-gray-500 text-sm">
+                Graded
+            </p>
+
+            <h2 class="text-3xl font-bold mt-2">
+                {{ submissions|rejectattr("grade","equalto",None)|list|length }}
+            </h2>
+
+        </div>
+
+        <div class="stat-card bg-white rounded-3xl shadow-md p-6">
+
+            <p class="text-gray-500 text-sm">
+                Pending
+            </p>
+
+            <h2 class="text-3xl font-bold mt-2">
+                {{ submissions|selectattr("grade","equalto",None)|list|length }}
+            </h2>
+
+        </div>
+
+    </div>
+
+    <!-- Assignment Grades -->
+
+    <div class="grade-card bg-white rounded-3xl shadow-md overflow-hidden mb-10">
+
+        <div class="px-8 py-6 border-b flex justify-between items-center">
+
+            <h2 class="text-2xl font-bold">
+                📝 Assignment Grades
+            </h2>
+
+            <span class="text-gray-500">
+                {{ submissions|length }} Submission(s)
+            </span>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="table w-full">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Course</th>
+                        <th>Assignment</th>
+                        <th>Submitted</th>
+                        <th>Grade</th>
+                        <th>Feedback</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for s in submissions %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ s.assignment.course.title }}
+
+                        </td>
+
+                        <td>
+
+                            <a href="{{ url_for('main.assignment_detail', assignment_id=s.assignment.id) }}"
+                               class="text-indigo-600 hover:underline">
+
+                                {{ s.assignment.title }}
+
+                            </a>
+
+                        </td>
+
+                        <td>
+
+                            {{ s.submitted_at.strftime('%d %b %Y') }}
+
+                        </td>
+
+                        <td>
+
+                            {% if s.grade %}
+
+                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+
+                                {{ s.grade }}
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+
+                                Pending
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ s.feedback or "—" }}
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="5" class="text-center py-10 text-gray-500">
+
+                            No assignments submitted yet.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Quiz Results -->
+
+    <div class="grade-card bg-white rounded-3xl shadow-md overflow-hidden">
+
+        <div class="px-8 py-6 border-b flex justify-between items-center">
+
+            <h2 class="text-2xl font-bold">
+
+                🎯 Quiz Results
+
+            </h2>
+
+            <span class="text-gray-500">
+
+                {{ quiz_results|length }} Attempt(s)
+
+            </span>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="table w-full">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Course</th>
+                        <th>Quiz</th>
+                        <th>Score</th>
+                        <th>Percentage</th>
+                        <th>Date</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for r in quiz_results %}
+
+                    {% set percent = ((r.score/r.total)*100) if r.total else 0 %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ r.quiz.course.title }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.quiz.title }}
+
+                        </td>
+
+                        <td>
+
+                            {{ r.score }}/{{ r.total }}
+
+                        </td>
+
+                        <td>
+
+                            {% if percent >= 80 %}
+
+                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+
+                            {% elif percent >= 50 %}
+
+                                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+
+                            {% else %}
+
+                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
+
+                            {% endif %}
+
+                                {{ "%.0f"|format(percent) }}%
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ r.taken_at.strftime('%d %b %Y') }}
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="5" class="text-center py-10 text-gray-500">
+
+                            No quizzes taken yet.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
 </div>
 
-<h4 class="mb-3">Quizzes</h4>
-<div class="card p-0" style="overflow:hidden;">
-<table class="table mb-0">
-  <thead><tr><th>Course</th><th>Quiz</th><th>Score</th><th>Taken</th></tr></thead>
-  <tbody>
-    {% for r in quiz_results %}
-      <tr>
-        <td>{{ r.quiz.course.title }}</td>
-        <td>{{ r.quiz.title }}</td>
-        <td><span class="badge" style="background: var(--color-info); color:#fff;">{{ r.score }}/{{ r.total }}</span></td>
-        <td>{{ r.taken_at.strftime('%b %d, %Y') }}</td>
-      </tr>
-    {% else %}
-      <tr><td colspan="4" class="text-center py-4">No quizzes taken yet.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
 {% endblock %}

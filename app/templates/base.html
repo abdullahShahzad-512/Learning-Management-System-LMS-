@@ -125,12 +125,7 @@
 
                 {% if current_user.is_authenticated %}
 
-                {% if current_user.is_admin() %}
-                <a href="{{ url_for('main.admin_dashboard') }}"
-                    class="px-2 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors">
-                    Admin Panel
-                </a>
-                {% endif %}
+                
 
                 <a href="{{ url_for('main.logout') }}"
                     class="px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors">

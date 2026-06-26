@@ -1,37 +1,192 @@
 {% extends "base.html" %}
-{% block content %}
-<h2 class="mb-4">My Courses</h2>
+<style>
+  .course-card {
+    transition: all .3s ease;
+  }
 
-<h4 class="mb-3">Teaching</h4>
-<div class="row g-3 mb-4">
-  {% for course in teaching %}
-    <div class="col-md-4">
-      <div class="card p-3">
-        <h5 class="card-title">{{ course.title }}</h5>
-        <div class="d-flex gap-2 mt-2">
-          <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">Manage</a>
-          <form method="POST" action="{{ url_for('main.delete_own_course', course_id=course.id) }}" onsubmit="return confirm('Delete this course? This cannot be undone.');">
-            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-          </form>
+  .course-card:hover {
+    transform: translateY(-8px);
+    box-shadow:
+      0 25px 50px rgba(0, 0, 0, .12);
+  }
+</style>
+{% block content %}
+<!-- Page Header -->
+<div class="relative overflow-hidden rounded-3xl primary-gradient p-8 mb-12 text-white">
+
+  <div class="relative z-10">
+    <h1 class="text-4xl font-extrabold mb-2">
+      Welcome back, {{ current_user.username }} 👋
+    </h1>
+
+    <p class="text-white/80 mb-6">
+      Continue learning, track progress, and manage your courses.
+    </p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4">
+        <p class="text-white/70 text-sm">Enrolled</p>
+        <p class="text-3xl font-bold">{{ enrolled|length }}</p>
+      </div>
+
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4">
+        <p class="text-white/70 text-sm">Teaching</p>
+        <p class="text-3xl font-bold">{{ teaching|length }}</p>
+      </div>
+
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4">
+        <p class="text-white/70 text-sm">Lessons</p>
+        <p class="text-3xl font-bold">{{ total_lessons }}</p>
+      </div>
+
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4">
+        <p class="text-white/70 text-sm">Completed</p>
+        <p class="text-3xl font-bold">68%</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<!-- Learning Section -->
+<section class="mb-16">
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-3xl">school</span>
+      <h2 class="text-on-surface text-2xl font-bold tracking-tight">Learning</h2>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for course in enrolled %}
+    <div
+      class="flex flex-col bg-surface-container-lowest rounded-[18px] card-shadow overflow-hidden border border-outline-variant/30">
+      <div class="w-full h-48 bg-cover bg-center">
+        {% if course.thumbnail %}
+        <img src="{{ url_for('static', filename=course.thumbnail) }}" class="w-full h-48 object-cover rounded-xl">
+        {% else %}
+        <img src="{{ url_for('static', filename='images/default-course.jpg') }}"
+          class="w-full h-48 object-cover rounded-xl">
+        {% endif %}
+      </div>
+      <div class="p-6 flex flex-col flex-1">
+        <div class="flex justify-between items-start mb-2">
+          <span
+            class="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-primary/10 text-primary">
+            <h3 class="text-xl font-bold">
+              {{ course.title }}
+            </h3>
+          </span>
+
+        </div>
+        <h3 class="text-on-surface text-xl font-bold mb-1 leading-snug">
+          <p class="text-sm text-slate-500 line-clamp-2">
+            {{ course.description }}
+          </p>
+        </h3>
+        <p class="text-on-surface-variant text-sm mb-6">{{ course.teacher.username }} </p>
+        <div class="mt-auto space-y-4">
+          <div class="space-y-1.5">
+
+            <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full primary-gradient rounded-full" style="width: 65%"></div>
+            </div>
+          </div>
+          <a href="{{ url_for('main.course_detail', course_id=course.id) }}"
+            class="w-full py-3 primary-gradient text-on-primary rounded-xl font-bold text-sm tracking-wide hover:opacity-90 transition-all flex items-center justify-center gap-2">
+            Continue Learning
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
         </div>
       </div>
     </div>
-  {% else %}
-    <p>You haven't created any courses yet. <a href="{{ url_for('main.create_course') }}">Create one</a>.</p>
-  {% endfor %}
-</div>
+    {% else %}
+    <div class="bg-white rounded-3xl p-12 text-center">
 
-<h4 class="mb-3">Enrolled</h4>
-<div class="row g-3">
-  {% for course in enrolled %}
-    <div class="col-md-4">
-      <div class="card p-3">
-        <h5 class="card-title">{{ course.title }}</h5>
-        <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm mt-2">View</a>
+      <div class="text-7xl mb-4">
+        📚
+      </div>
+
+      <h3 class="text-2xl font-bold mb-3">
+        No Courses Yet
+      </h3>
+
+      <p class="text-slate-500 mb-6">
+        Explore available courses and start learning.
+      </p>
+
+      <a href="{{ url_for('main.courses') }}" class="px-6 py-3 rounded-xl primary-gradient text-white">
+        Browse Courses
+      </a>
+
+    </div>
+    {% endfor %}
+  </div>
+</section>
+<!-- Teaching Section -->
+<section>
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-secondary text-3xl">present_to_all</span>
+      <h2 class="text-on-surface text-2xl font-bold tracking-tight">Teaching</h2>
+    </div>
+    <a href="{{ url_for('main.create_course') }}"
+      class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+      <span class="material-symbols-outlined text-sm">add</span> Create New Course
+    </a>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    {% for course in teaching %}
+    <div
+      class="flex bg-surface-container-lowest rounded-[18px] card-shadow overflow-hidden border border-outline-variant/30 group">
+      <div class="w-1/3 min-w-[160px] bg-cover bg-center hidden sm:block">
+        {% if course.thumbnail %}
+        <img src="{{ url_for('static', filename=course.thumbnail) }}" class="w-full h-48 object-cover rounded-xl">
+        {% else %}
+        <img src="{{ url_for('static', filename='images/default-course.jpg') }}"
+          class="w-full h-48 object-cover rounded-xl">
+        {% endif %}
+      </div>
+      <div class="p-8 flex flex-col flex-1">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-on-surface text-xl font-bold leading-snug">{{course.title}}</h3>
+
+        </div>
+        <div class="grid grid-cols-4 gap-4">
+
+          <div>
+            <p class="text-xs">Students</p>
+            <p class="font-bold">{{ course.enrollments|length }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs">Lessons</p>
+            <p class="font-bold">{{ course.lessons|length }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs">Quizzes</p>
+            <p class="font-bold">{{ course.quizzes|length }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs">Assignments</p>
+            <p class="font-bold">{{ course.assignments|length }}</p>
+          </div>
+
+        </div>
+        <div class="mt-auto">
+          <a href="{{ url_for('main.course_detail', course_id=course.id) }}"
+            class="w-full py-3 primary-gradient text-on-primary rounded-xl font-bold text-sm tracking-wide hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2">
+            Manage Course
+            <span class="material-symbols-outlined text-base">settings</span>
+          </a>
+        </div>
       </div>
     </div>
-  {% else %}
-    <p>You're not enrolled in any courses yet. <a href="{{ url_for('main.courses') }}">Browse courses</a>.</p>
-  {% endfor %}
-</div>
+    {% else %}
+    <p>You haven't created any courses yet.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

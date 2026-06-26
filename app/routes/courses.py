@@ -4,6 +4,8 @@ from app import db
 from app.routes import main
 from app.models import Course, Enrollment
 from app.forms import CourseForm
+from werkzeug.utils import secure_filename
+import os, uuid
 
 
 @main.route("/courses")
@@ -16,14 +18,50 @@ def courses():
 @login_required
 def create_course():
     form = CourseForm()
+
     if form.validate_on_submit():
-        course = Course(title=form.title.data, description=form.description.data, teacher_id=current_user.id)
+
+        thumbnail_path = None
+
+        # Handle thumbnail upload
+        if form.thumbnail.data:
+            file = form.thumbnail.data
+
+            filename = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
+
+            upload_folder = os.path.join(
+                "app", "static", "uploads", "thumbnails"
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            file_path = os.path.join(upload_folder, filename)
+            file.save(file_path)
+
+            # Store relative path in DB
+            thumbnail_path = f"uploads/thumbnails/{filename}"
+
+        course = Course(
+            title=form.title.data,
+            description=form.description.data,
+            thumbnail=thumbnail_path,
+            teacher_id=current_user.id
+        )
+
         db.session.add(course)
         db.session.commit()
-        flash("Course created! You're now the teacher of this course.", "success")
-        return redirect(url_for("main.courses"))
-    return render_template("create_course.html", form=form)
 
+        flash(
+            "Course created! You're now the teacher of this course.",
+            "success"
+        )
+
+        return redirect(url_for("main.courses"))
+
+    return render_template(
+        "create_course.html",
+        form=form
+    )
 
 @main.route("/courses/<int:course_id>")
 def course_detail(course_id):

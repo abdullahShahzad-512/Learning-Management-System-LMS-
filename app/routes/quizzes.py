@@ -93,3 +93,31 @@ def course_quizzes(course_id):
 
     quizzes = Quiz.query.filter_by(course_id=course.id).order_by(Quiz.created_at.desc()).all()
     return render_template("course_quizzes.html", course=course, quizzes=quizzes, is_owner=is_owner, now=datetime.utcnow())
+
+@main.route("/quizzes/<int:quiz_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    if not current_user.is_teacher_of(quiz.course):
+        abort(403)
+
+    form = QuizForm(obj=quiz)
+    if form.validate_on_submit():
+        quiz.title = form.title.data
+        db.session.commit()
+        flash("Quiz updated!", "success")
+        return redirect(url_for("main.course_quizzes", course_id=quiz.course.id))
+
+    return render_template("edit_quiz.html", form=form, quiz=quiz)
+
+@main.route("/quizzes/<int:quiz_id>/delete", methods=["POST"])
+@login_required
+def delete_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    if not current_user.is_teacher_of(quiz.course):
+        abort(403)
+
+    db.session.delete(quiz)
+    db.session.commit()
+    flash("Quiz deleted.", "info")
+    return redirect(url_for("main.course_quizzes", course_id=quiz.course.id))
