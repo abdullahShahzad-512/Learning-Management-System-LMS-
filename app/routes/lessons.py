@@ -12,6 +12,8 @@ import os, uuid
 @main.route("/courses/<int:course_id>/lessons/create", methods=["GET", "POST"])
 @login_required
 def create_lesson(course_id):
+    course = Course.query.get_or_404(course_id)
+
     form = LessonForm()
 
     if form.validate_on_submit():
@@ -51,7 +53,7 @@ def create_lesson(course_id):
 
         return redirect(url_for("main.course_detail", course_id=course_id))
 
-    return render_template("create_lesson.html", form=form)
+    return render_template("create_lesson.html", form=form,course=course)
 
 
 @main.route("/courses/<int:course_id>/lessons")

@@ -1,5 +1,6 @@
 {%extends "base.html"%}
 {%block content%}
+<input type="hidden" id="courseTitle" value="{{ course.title }}">
 <form method="POST" enctype="multipart/form-data" class="space-y-lg">
 
     {{ form.hidden_tag() }}
@@ -10,8 +11,10 @@
             {{ form.title.label.text }}
         </label>
         {{ form.title(
-            class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-base text-body-base form-input-focus transition-all duration-200",
-            placeholder="e.g. Introduction to Design Tokens"
+        id="lessonTitle",
+        class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface
+        font-body-base text-body-base form-input-focus transition-all duration-200",
+        placeholder="e.g. Introduction to Design Tokens"
         ) }}
     </div>
 
@@ -22,7 +25,8 @@
         </label>
 
         <div class="flex items-center justify-center w-full">
-            <label class="flex flex-col w-full border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-all duration-200">
+            <label
+                class="flex flex-col w-full border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-all duration-200">
 
                 <div class="flex flex-col items-center justify-center pt-6 pb-6">
                     <span class="material-symbols-outlined text-4xl text-outline mb-2">upload</span>
@@ -40,13 +44,13 @@
         </div>
     </div>
     <div id="videoPreview" class="hidden mt-3 p-3 bg-surface-container-low rounded-xl">
-    <p class="text-sm text-green-600 font-medium">
-        ✅ Video selected: <span id="videoName"></span>
-    </p>
+        <p class="text-sm text-green-600 font-medium">
+            ✅ Video selected: <span id="videoName"></span>
+        </p>
 
-    <!-- Optional video preview -->
-    <video id="videoPlayer" class="mt-3 rounded-lg w-full hidden" controls></video>
-</div>
+        <!-- Optional video preview -->
+        <video id="videoPlayer" class="mt-3 rounded-lg w-full hidden" controls></video>
+    </div>
 
     <!-- Lesson Content -->
     <div class="space-y-sm">
@@ -54,20 +58,42 @@
             {{ form.content.label.text }}
         </label>
         {{ form.content(
-            rows=4,
-            class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-base text-body-base form-input-focus transition-all duration-200 resize-none",
-            placeholder="Briefly describe the learning objectives for this lesson..."
+        id="lessonContent",
+        rows=4,
+        class="w-full px-md py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface
+        font-body-base text-body-base form-input-focus transition-all duration-200 resize-none",
+        placeholder="Briefly describe the learning objectives for this lesson..."
         ) }}
+    </div>
+    <div class="flex items-center justify-between mt-3">
+
+        <button type="button" id="generate-ai-btn" class="inline-flex items-center gap-2 px-5 py-2.5
+               bg-indigo-600 hover:bg-indigo-700
+               text-white rounded-xl font-semibold
+               transition-all">
+
+            <span class="material-symbols-outlined">
+                auto_awesome
+            </span>
+
+            Generate with AI
+
+        </button>
+
+        <span id="lesson-status" class="text-sm text-gray-500">
+        </span>
+
     </div>
 
     <!-- Action Buttons -->
     <div class="pt-md flex flex-col sm:flex-row gap-md">
 
         {{ form.submit(
-            class="flex-grow primary-gradient text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-sm"
+        class="flex-grow primary-gradient text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all
+        duration-200 active:scale-95 flex items-center justify-center gap-sm"
         ) }}
 
-       
+
     </div>
 
 </form>
@@ -91,5 +117,48 @@
             videoPlayer.classList.remove("hidden");
         }
     });
+</script>
+<script src="{{ url_for('static', filename='js/ai.js') }}"></script>
+
+<script>
+
+    document
+        .getElementById("generate-ai-btn")
+        .addEventListener("click", function () {
+            console.log("AI Generate button clicked");
+            AI.generate({
+
+                endpoint: "/api/ai/lesson-content",
+
+                inputs: [
+
+                    {
+                        id: "courseTitle",
+                        key: "course_title",
+                        label: "Course Title"
+                    },
+
+                    {
+                        id: "lessonTitle",
+                        key: "lesson_title",
+                        label: "Lesson Title"
+                    }
+
+                ],
+
+                outputId: "lessonContent",
+
+                buttonId: "generate-ai-btn",
+
+                statusId: "lesson-status",
+
+                responseKey: "lesson_content",
+
+                successMessage: "Lesson generated successfully."
+
+            });
+
+        });
+
 </script>
 {%endblock%}

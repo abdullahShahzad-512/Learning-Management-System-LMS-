@@ -10,7 +10,9 @@ class Config:
         "DATABASE_URL", "sqlite:///" + os.path.join(basedir, "lms.db")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+    AI_API_KEY = os.getenv("GITHUB_TOKEN")
+    AI_ENDPOINT = os.getenv("AI_ENDPOINT")
+    AI_MODEL = os.getenv("AI_MODEL")
 
 class DevelopmentConfig(Config):
     DEBUG = True
