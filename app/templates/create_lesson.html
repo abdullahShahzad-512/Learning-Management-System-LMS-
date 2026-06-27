@@ -120,12 +120,12 @@
 </script>
 <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
 
+
 <script>
 
     document
         .getElementById("generate-ai-btn")
         .addEventListener("click", function () {
-            console.log("AI Generate button clicked");
             AI.generate({
 
                 endpoint: "/api/ai/lesson-content",
@@ -160,5 +160,34 @@
 
         });
 
+</script>
+<script src="{{ url_for('static', filename='js/ckeditor.js') }}"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", async () => {
+
+        await LMSCKEditor.init("lessonContent");
+
+    });
+
+</script>
+<script>
+    document
+        .getElementById("lesson-form")
+        .addEventListener("submit", function () {
+
+            const editor =
+                LMSCKEditor.editors["lessonContent"];
+
+            if (editor) {
+
+                document
+                    .getElementById("lessonContent")
+                    .value =
+                    editor.getData();
+
+            }
+
+        });
 </script>
 {%endblock%}

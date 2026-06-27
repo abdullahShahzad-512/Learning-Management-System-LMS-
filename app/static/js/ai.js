@@ -104,8 +104,21 @@ const AI = {
 
             }
 
-            output.value = data[responseKey];
+            const generatedContent = data[responseKey];
 
+            if (
+                window.LMSCKEditor &&
+                LMSCKEditor.editors &&
+                LMSCKEditor.editors[outputId]
+            ) {
+
+                LMSCKEditor.editors[outputId].setData(generatedContent);
+
+            }
+            else {
+
+                output.value = data[responseKey];
+            }
             status.innerHTML =
                 `<span class="text-green-600">✓ ${successMessage}</span>`;
 

@@ -21,6 +21,7 @@
         background: #e2e8f0;
         overflow: hidden;
     }
+
     .progress-bar-fill {
         height: 100%;
         border-radius: 9999px;
@@ -30,9 +31,10 @@
     .card-lift {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .card-lift:hover {
         transform: translateY(-3px);
-        box-shadow: 0 20px 40px -8px rgba(0,0,0,.12);
+        box-shadow: 0 20px 40px -8px rgba(0, 0, 0, .12);
     }
 
     /* ─── Hero badge ─── */
@@ -76,7 +78,11 @@
         color: #fff;
         text-decoration: none;
     }
-    .mgmt-btn:hover { opacity: .92; transform: translateY(-1px); }
+
+    .mgmt-btn:hover {
+        opacity: .92;
+        transform: translateY(-1px);
+    }
 
     /* ─── Workspace nav card ─── */
     .ws-card {
@@ -88,8 +94,9 @@
         text-decoration: none;
         display: block;
     }
+
     .ws-card:hover {
-        box-shadow: 0 12px 28px -6px rgba(0,0,0,.1);
+        box-shadow: 0 12px 28px -6px rgba(0, 0, 0, .1);
         transform: translateY(-2px);
     }
 
@@ -102,7 +109,10 @@
         border-bottom: 1px solid #f1f5f9;
         font-size: 14px;
     }
-    .info-row:last-child { border-bottom: none; }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
 
     /* ─── Resource row ─── */
     .resource-row {
@@ -113,7 +123,10 @@
         border-bottom: 1px solid #f1f5f9;
         font-size: 14px;
     }
-    .resource-row:last-child { border-bottom: none; }
+
+    .resource-row:last-child {
+        border-bottom: none;
+    }
 
     /* ─── Activity row ─── */
     .activity-dot {
@@ -131,6 +144,7 @@
         gap: 12px;
         margin-bottom: 14px;
     }
+
     .top-student-avatar {
         width: 36px;
         height: 36px;
@@ -138,6 +152,7 @@
         object-fit: cover;
         flex-shrink: 0;
     }
+
     .top-student-avatar-placeholder {
         width: 36px;
         height: 36px;
@@ -154,12 +169,12 @@
 
     /* ─── Instructor card (hero overlay) ─── */
     .instructor-card {
-        background: rgba(255,255,255,.96);
+        background: rgba(255, 255, 255, .96);
         backdrop-filter: blur(12px);
         border-radius: 16px;
         padding: 16px 20px;
         min-width: 200px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.18);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
     }
 
     /* ─── Enrolled / not enrolled banner ─── */
@@ -175,7 +190,9 @@
     }
 
     @media (max-width: 768px) {
-        .instructor-card { display: none; }
+        .instructor-card {
+            display: none;
+        }
     }
 </style>
 
@@ -198,10 +215,12 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+            <button
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
                 <span class="material-symbols-outlined" style="font-size:17px">share</span> Share
             </button>
-            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition">
+            <button
+                class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition">
                 <span class="material-symbols-outlined" style="font-size:18px">more_vert</span>
             </button>
         </div>
@@ -216,14 +235,15 @@
 
         {% if course.thumbnail %}
         <img src="{{ url_for('static', filename=course.thumbnail) }}"
-             class="absolute inset-0 w-full h-full object-cover opacity-50" alt="{{ course.title }}">
+            class="absolute inset-0 w-full h-full object-cover opacity-50" alt="{{ course.title }}">
         {% else %}
         <img src="{{ url_for('static', filename='images/default-course.jpg') }}"
-             class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Course">
+            class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Course">
         {% endif %}
 
         <!-- dark gradient left-to-right -->
-        <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(10,10,20,.92) 45%,rgba(10,10,20,.4) 100%)"></div>
+        <div class="absolute inset-0"
+            style="background:linear-gradient(90deg,rgba(10,10,20,.92) 45%,rgba(10,10,20,.4) 100%)"></div>
 
         <!-- content -->
         <div class="relative z-10 flex items-center justify-between gap-8 p-10 lg:p-14" style="min-height:340px;">
@@ -235,14 +255,37 @@
                     📚 Programming
                 </span>
 
-                <h1 class="text-white font-black leading-tight mt-3" style="font-size:clamp(1.6rem,3vw,2.6rem);text-wrap:balance;">
+                <h1 class="text-white font-black leading-tight mt-3"
+                    style="font-size:clamp(1.6rem,3vw,2.6rem);text-wrap:balance;">
                     {{ course.title }}
                 </h1>
 
                 {% if course.description %}
-                <p class="mt-4 text-slate-300 text-base leading-relaxed max-w-lg">
-                    {{ course.description | truncate(160) }}
+                <p id="desc-{{ course.id }}" class="mt-4 text-slate-300 text-base leading-relaxed max-w-lg">
+                    {{ course.description }}
                 </p>
+
+                <script>
+                    const desc = document.getElementById('desc-{{ course.id }}');
+                    const fullText = desc.textContent.trim();
+
+                    if (fullText.length > 160) {
+                        const shortText = fullText.substring(0, 160);
+
+                        desc.innerHTML = `
+                <span class="short">${shortText}...</span>
+                <span class="full hidden">${fullText}</span>
+                <a href="#" class="text-blue-400 ml-1 see-more">See more</a>
+            `;
+
+                        desc.querySelector('.see-more').addEventListener('click', function (e) {
+                            e.preventDefault();
+                            desc.querySelector('.short').classList.add('hidden');
+                            desc.querySelector('.full').classList.remove('hidden');
+                            this.remove();
+                        });
+                    }
+                </script>
                 {% endif %}
 
                 <!-- inline stats row -->
@@ -269,24 +312,26 @@
                 <div class="flex flex-wrap gap-3 mt-8">
                     {% if is_enrolled or is_owner %}
                     <a href="{{ url_for('main.course_lessons', course_id=course.id) }}"
-                       class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
                         <span class="material-symbols-outlined" style="font-size:18px">play_arrow</span>
                         Continue Learning
                     </a>
                     {% elif current_user.is_authenticated %}
                     <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}">
-                        <button class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
+                        <button
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
                             <span class="material-symbols-outlined" style="font-size:18px">play_arrow</span>
                             Enroll Now
                         </button>
                     </form>
                     {% else %}
                     <a href="{{ url_for('main.login') }}"
-                       class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
                         Login to Enroll
                     </a>
                     {% endif %}
-                    <button class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition">
+                    <button
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition">
                         <span class="material-symbols-outlined" style="font-size:18px">menu_book</span>
                         View Syllabus
                     </button>
@@ -299,7 +344,7 @@
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-3">Instructor</p>
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg"
-                         style="background:linear-gradient(135deg,#6366f1,#a855f7);">
+                        style="background:linear-gradient(135deg,#6366f1,#a855f7);">
                         {{ course.teacher.username[0]|upper }}
                     </div>
                     <div>
@@ -350,7 +395,8 @@
                 </div>
                 <span class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Assignments</span>
             </div>
-            <p class="text-3xl font-black text-slate-800">{{ course.assignments|length if course.assignments else 0 }}</p>
+            <p class="text-3xl font-black text-slate-800">{{ course.assignments|length if course.assignments else 0 }}
+            </p>
             <p class="stat-sub text-orange-500">3 Pending</p>
         </div>
 
@@ -368,7 +414,7 @@
 
         <!-- Rating -->
         <div class="rounded-2xl p-5 shadow-sm card-lift text-white"
-             style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+            style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
             <div class="flex items-center gap-2 mb-3">
                 <span style="font-size:22px">⭐</span>
                 <span class="text-sm font-bold opacity-90">Course Rating</span>
@@ -395,7 +441,8 @@
                  CONTINUE LEARNING (enrolled)
             ──────────────────────────────── -->
             {% if is_enrolled %}
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center">
+            <div
+                class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center">
 
                 <div class="flex-1">
                     <p class="text-xs text-green-600 font-bold uppercase tracking-widest mb-1">Continue Learning</p>
@@ -418,7 +465,7 @@
                     </div>
 
                     <a href="{{ url_for('main.course_lessons', course_id=course.id) }}"
-                       class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl border-2 border-indigo-600 text-indigo-700 font-bold text-sm hover:bg-indigo-50 transition">
+                        class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl border-2 border-indigo-600 text-indigo-700 font-bold text-sm hover:bg-indigo-50 transition">
                         Resume Lesson
                         <span class="material-symbols-outlined" style="font-size:17px">arrow_forward</span>
                     </a>
@@ -446,7 +493,7 @@
                         <p class="text-sm text-slate-500 mt-0.5">Manage your course and students effectively.</p>
                     </div>
                     <a href="{{ url_for('main.course_gradebook', course_id=course.id) }}"
-                       class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-indigo-200 text-indigo-700 text-sm font-semibold hover:bg-indigo-50 transition">
+                        class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-indigo-200 text-indigo-700 text-sm font-semibold hover:bg-indigo-50 transition">
                         <span class="material-symbols-outlined" style="font-size:17px">analytics</span>
                         View Analytics
                     </a>
@@ -463,8 +510,10 @@
                         <p class="text-2xl font-black text-slate-800">{{ course.enrollments|length }}</p>
                         <p class="text-xs text-green-600 font-semibold mt-1">+18 this week</p>
                         <!-- sparkline placeholder -->
-                        <svg class="sparkline mt-2 w-full" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <polyline points="0,28 13,22 26,24 40,14 53,18 66,8 80,12" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg class="sparkline mt-2 w-full" viewBox="0 0 80 32" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="0,28 13,22 26,24 40,14 53,18 66,8 80,12" stroke="#22c55e" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
 
@@ -476,29 +525,33 @@
                         <p class="text-2xl font-black text-slate-800">8</p>
                         <p class="text-xs text-orange-500 font-semibold mt-1">Needs attention</p>
                         <svg class="sparkline mt-2 w-full" viewBox="0 0 80 32" fill="none">
-                            <polyline points="0,10 13,16 26,12 40,20 53,14 66,22 80,18" stroke="#f97316" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="0,10 13,16 26,12 40,20 53,14 66,22 80,18" stroke="#f97316"
+                                stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
 
                     <div class="dash-stat">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:18px">assignment</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:18px">assignment</span>
                             <span class="text-xs text-slate-500 font-medium">Total Assignments</span>
                         </div>
-                        <p class="text-2xl font-black text-slate-800">{{ course.assignments|length if course.assignments else 0 }}</p>
+                        <p class="text-2xl font-black text-slate-800">{{ course.assignments|length if course.assignments
+                            else 0 }}</p>
                         <p class="text-xs text-indigo-600 font-semibold mt-1">3 Active</p>
                         <svg class="sparkline mt-2 w-full" viewBox="0 0 80 32" fill="none">
-                            <polyline points="0,24 13,18 26,20 40,10 53,16 66,6 80,12" stroke="#6366f1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="0,24 13,18 26,20 40,10 53,16 66,6 80,12" stroke="#6366f1" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
 
                     <div class="dash-stat flex flex-col items-center justify-center text-center">
                         <!-- Donut placeholder -->
                         <svg width="56" height="56" viewBox="0 0 56 56">
-                            <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="7"/>
+                            <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="7" />
                             <circle cx="28" cy="28" r="22" fill="none" stroke="#4f46e5" stroke-width="7"
-                                    stroke-dasharray="87.6 138.2" stroke-dashoffset="34.6"
-                                    stroke-linecap="round" transform="rotate(-90 28 28)"/>
+                                stroke-dasharray="87.6 138.2" stroke-dashoffset="34.6" stroke-linecap="round"
+                                transform="rotate(-90 28 28)" />
                         </svg>
                         <p class="text-xl font-black text-slate-800 mt-2">65%</p>
                         <p class="text-xs text-slate-500 font-medium">Avg. Completion</p>
@@ -516,15 +569,18 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 
-                    <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="mgmt-btn" style="background:#4f46e5;">
+                    <a href="{{ url_for('main.create_lesson', course_id=course.id) }}" class="mgmt-btn"
+                        style="background:#4f46e5;">
                         <span class="material-symbols-outlined" style="font-size:20px">play_lesson</span>
                         <div>
                             <p class="text-sm font-bold leading-tight">Add Lesson</p>
-                            <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Upload videos and course materials</p>
+                            <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Upload videos and course
+                                materials</p>
                         </div>
                     </a>
 
-                    <a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="mgmt-btn" style="background:#f97316;">
+                    <a href="{{ url_for('main.create_assignment', course_id=course.id) }}" class="mgmt-btn"
+                        style="background:#f97316;">
                         <span class="material-symbols-outlined" style="font-size:20px">assignment_add</span>
                         <div>
                             <p class="text-sm font-bold leading-tight">Add Assignment</p>
@@ -532,21 +588,24 @@
                         </div>
                     </a>
 
-                    <a href="{{ url_for('main.create_quiz', course_id=course.id) }}" class="mgmt-btn" style="background:#ec4899;">
+                    <a href="{{ url_for('main.create_quiz', course_id=course.id) }}" class="mgmt-btn"
+                        style="background:#ec4899;">
                         <span class="material-symbols-outlined" style="font-size:20px">quiz</span>
                         <div>
                             <p class="text-sm font-bold leading-tight">Add Quiz</p>
-                            <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Create quizzes and evaluations</p>
+                            <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Create quizzes and
+                                evaluations</p>
                         </div>
                     </a>
 
                     <form method="POST" action="{{ url_for('main.delete_own_course', course_id=course.id) }}"
-                          onsubmit="return confirm('Delete this course permanently?')">
+                        onsubmit="return confirm('Delete this course permanently?')">
                         <button class="mgmt-btn w-full" style="background:#ef4444;">
                             <span class="material-symbols-outlined" style="font-size:20px">delete_forever</span>
                             <div class="text-left">
                                 <p class="text-sm font-bold leading-tight">Delete Course</p>
-                                <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Permanently remove this course</p>
+                                <p class="text-xs opacity-80 font-normal leading-tight mt-0.5">Permanently remove this
+                                    course</p>
                             </div>
                         </button>
                     </form>
@@ -557,23 +616,27 @@
 
             {% elif is_enrolled %}
             <!-- Student enrolled banner -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div
+                class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-bold mb-4">
+                    <span
+                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-bold mb-4">
                         <span class="material-symbols-outlined" style="font-size:16px">check_circle</span>
                         You're enrolled
                     </span>
                     <h2 class="text-2xl font-black text-slate-800">Ready to Continue?</h2>
-                    <p class="text-slate-500 mt-2 max-w-md text-sm">Continue watching lessons, complete assignments, participate in quizzes and track your grades.</p>
+                    <p class="text-slate-500 mt-2 max-w-md text-sm">Continue watching lessons, complete assignments,
+                        participate in quizzes and track your grades.</p>
                 </div>
                 <div class="flex flex-col gap-3 shrink-0">
                     <a href="{{ url_for('main.course_lessons', course_id=course.id) }}"
-                       class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm text-center hover:bg-indigo-700 transition">
+                        class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm text-center hover:bg-indigo-700 transition">
                         Continue Learning
                     </a>
                     <form method="POST" action="{{ url_for('main.unenroll', course_id=course.id) }}"
-                          onsubmit="return confirm('Unenroll from this course?')">
-                        <button class="w-full px-6 py-3 rounded-xl border-2 border-red-400 text-red-600 font-bold text-sm hover:bg-red-50 transition">
+                        onsubmit="return confirm('Unenroll from this course?')">
+                        <button
+                            class="w-full px-6 py-3 rounded-xl border-2 border-red-400 text-red-600 font-bold text-sm hover:bg-red-50 transition">
                             Leave Course
                         </button>
                     </form>
@@ -586,7 +649,8 @@
                 <div class="grid lg:grid-cols-2 gap-8 items-center">
                     <div>
                         <h2 class="text-3xl font-black">Start Learning Today</h2>
-                        <p class="mt-3 text-white/80 text-sm leading-relaxed">Join thousands of learners and unlock every lesson, assignment, quiz and progress tracking.</p>
+                        <p class="mt-3 text-white/80 text-sm leading-relaxed">Join thousands of learners and unlock
+                            every lesson, assignment, quiz and progress tracking.</p>
                         <ul class="space-y-2 mt-6 text-sm">
                             <li>✅ Unlimited lesson access</li>
                             <li>✅ Download resources</li>
@@ -594,7 +658,8 @@
                             <li>✅ Track your grades</li>
                         </ul>
                         <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}" class="mt-8">
-                            <button class="px-8 py-3.5 rounded-xl bg-white text-indigo-700 font-bold hover:scale-105 transition text-sm">
+                            <button
+                                class="px-8 py-3.5 rounded-xl bg-white text-indigo-700 font-bold hover:scale-105 transition text-sm">
                                 Enroll Now — It's Free
                             </button>
                         </form>
@@ -610,7 +675,7 @@
                 <h2 class="text-2xl font-black text-slate-800">Login Required</h2>
                 <p class="text-slate-500 mt-2 text-sm">Sign in to enroll in this course.</p>
                 <a href="{{ url_for('main.login') }}"
-                   class="inline-block mt-6 px-8 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">
+                    class="inline-block mt-6 px-8 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">
                     Login
                 </a>
             </div>
@@ -634,9 +699,11 @@
                     <a href="{{ url_for('main.course_lessons', course_id=course.id) }}" class="ws-card">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-indigo-600" style="font-size:18px">play_lesson</span>
+                                <span class="material-symbols-outlined text-indigo-600"
+                                    style="font-size:18px">play_lesson</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Lessons</h4>
                         <p class="text-xs text-slate-500 mt-1">{{ course.lessons|length }} Lessons · 12 Completed</p>
@@ -650,12 +717,15 @@
                     <a href="{{ url_for('main.course_assignments', course_id=course.id) }}" class="ws-card">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-orange-500" style="font-size:18px">assignment</span>
+                                <span class="material-symbols-outlined text-orange-500"
+                                    style="font-size:18px">assignment</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Assignments</h4>
-                        <p class="text-xs text-slate-500 mt-1">{{ course.assignments|length if course.assignments else 0 }} Assignments · 3 Pending</p>
+                        <p class="text-xs text-slate-500 mt-1">{{ course.assignments|length if course.assignments else 0
+                            }} Assignments · 3 Pending</p>
                         <div class="mt-3 progress-bar">
                             <div class="progress-bar-fill bg-orange-400" style="width:20%"></div>
                         </div>
@@ -668,10 +738,12 @@
                             <div class="w-9 h-9 rounded-xl bg-pink-50 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-pink-600" style="font-size:18px">quiz</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Quizzes</h4>
-                        <p class="text-xs text-slate-500 mt-1">{{ course.quizzes|length if course.quizzes else 0 }} Quizzes · 2 Available</p>
+                        <p class="text-xs text-slate-500 mt-1">{{ course.quizzes|length if course.quizzes else 0 }}
+                            Quizzes · 2 Available</p>
                         <div class="mt-3 progress-bar">
                             <div class="progress-bar-fill bg-pink-500" style="width:25%"></div>
                         </div>
@@ -683,9 +755,11 @@
                     <a href="{{ url_for('main.my_grades', course_id=course.id) }}" class="ws-card">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-green-600" style="font-size:18px">analytics</span>
+                                <span class="material-symbols-outlined text-green-600"
+                                    style="font-size:18px">analytics</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Grades</h4>
                         <p class="text-xs text-green-600 font-semibold mt-1">Your Grade: A- (88%)</p>
@@ -696,9 +770,11 @@
                     <div class="ws-card" style="cursor:default;">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-blue-600" style="font-size:18px">forum</span>
+                                <span class="material-symbols-outlined text-blue-600"
+                                    style="font-size:18px">forum</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Discussions</h4>
                         <p class="text-xs text-slate-500 mt-1">23 Discussions · 5 Unread</p>
@@ -712,9 +788,11 @@
                     <div class="ws-card" style="cursor:default;">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-9 h-9 rounded-xl bg-yellow-50 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-yellow-600" style="font-size:18px">campaign</span>
+                                <span class="material-symbols-outlined text-yellow-600"
+                                    style="font-size:18px">campaign</span>
                             </div>
-                            <span class="material-symbols-outlined text-slate-400" style="font-size:20px">arrow_forward</span>
+                            <span class="material-symbols-outlined text-slate-400"
+                                style="font-size:20px">arrow_forward</span>
                         </div>
                         <h4 class="font-black text-slate-800 text-sm">Announcements</h4>
                         <p class="text-xs text-slate-500 mt-1">3 New · Latest updates</p>
@@ -727,35 +805,11 @@
             </div>
 
 
-            <!-- ────────────────────────────────
-                 WHAT YOU'LL LEARN
-            ──────────────────────────────── -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h3 class="text-xl font-black text-slate-800 mb-5">🎯 What You'll Learn</h3>
-                <div class="grid md:grid-cols-2 gap-3">
-                    {% set objectives = [
-                        'Python Programming Fundamentals',
-                        'Object-Oriented Programming',
-                        'Web Development with Flask',
-                        'Database Integration with SQL',
-                        'APIs and RESTful Services',
-                        'Deployment and Best Practices'
-                    ] %}
-                    {% for obj in objectives %}
-                    <div class="flex items-center gap-3 text-sm text-slate-700">
-                        <span class="material-symbols-outlined text-indigo-600" style="font-size:18px;flex-shrink:0;">check_circle</span>
-                        {{ obj }}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
 
         </div>
 
 
-        <!-- ═══════════════════════════════════
-             SIDEBAR (1/3)
-        ═══════════════════════════════════ -->
+
         <aside class="space-y-5">
 
             <!-- Course Information -->
@@ -782,10 +836,7 @@
                         <span class="text-slate-500">Created</span>
                         <strong class="text-slate-800 text-sm">{{ course.created_at.strftime("%b %Y") }}</strong>
                     </div>
-                    <div class="info-row">
-                        <span class="text-slate-500">Duration</span>
-                        <strong class="text-slate-800 text-sm">18h 30m</strong>
-                    </div>
+
                     <div class="info-row">
                         <span class="text-slate-500">Students</span>
                         <strong class="text-slate-800 text-sm">{{ course.students|length }}</strong>
@@ -800,21 +851,24 @@
                 <div>
                     <div class="resource-row">
                         <div class="flex items-center gap-2.5">
-                            <span class="material-symbols-outlined text-red-500" style="font-size:18px">picture_as_pdf</span>
+                            <span class="material-symbols-outlined text-red-500"
+                                style="font-size:18px">picture_as_pdf</span>
                             <span class="text-sm text-slate-700">Course Slides</span>
                         </div>
                         <span class="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">PDF</span>
                     </div>
                     <div class="resource-row">
                         <div class="flex items-center gap-2.5">
-                            <span class="material-symbols-outlined text-orange-500" style="font-size:18px">description</span>
+                            <span class="material-symbols-outlined text-orange-500"
+                                style="font-size:18px">description</span>
                             <span class="text-sm text-slate-700">Cheatsheet</span>
                         </div>
                         <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded">PDF</span>
                     </div>
                     <div class="resource-row">
                         <div class="flex items-center gap-2.5">
-                            <span class="material-symbols-outlined text-green-600" style="font-size:18px">folder_zip</span>
+                            <span class="material-symbols-outlined text-green-600"
+                                style="font-size:18px">folder_zip</span>
                             <span class="text-sm text-slate-700">Source Code</span>
                         </div>
                         <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">ZIP</span>
@@ -837,61 +891,16 @@
             </div>
 
 
-            <!-- Recent Activity -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h3 class="font-black text-slate-800 text-base mb-4">Recent Activity</h3>
-                <div class="space-y-4">
-                    <div class="flex gap-3">
-                        <div class="activity-dot bg-indigo-500"></div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <p class="text-sm font-semibold text-slate-800">New lesson published</p>
-                                <span class="text-xs text-slate-400">2 hours ago</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5">Functions in Python</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <div class="activity-dot bg-green-500"></div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <p class="text-sm font-semibold text-slate-800">Assignment available</p>
-                                <span class="text-xs text-slate-400">Yesterday</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5">Build a Calculator App</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <div class="activity-dot bg-pink-500"></div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <p class="text-sm font-semibold text-slate-800">Quiz released</p>
-                                <span class="text-xs text-slate-400">2 days ago</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5">Python Basics Quiz</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <div class="activity-dot bg-orange-400"></div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <p class="text-sm font-semibold text-slate-800">Student enrolled</p>
-                                <span class="text-xs text-slate-400">3 days ago</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5">Rahul Sharma joined</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
 
             <!-- Top Students (owner only) -->
             {% if is_owner %}
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                 <h3 class="font-black text-slate-800 text-base mb-4">Top Students</h3>
-                
+
                 <a href="{{ url_for('main.course_students', course_id=course.id) }}"
-                   class="block text-center mt-3 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                    class="block text-center mt-3 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
                     View All Students
                 </a>
             </div>
