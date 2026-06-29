@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, abort, request
+from flask import render_template, redirect, url_for, flash, abort, request, jsonify, Blueprint
 from flask_login import login_required, current_user
 from app import db
 from app.routes import main
@@ -121,3 +121,43 @@ def delete_quiz(quiz_id):
     db.session.commit()
     flash("Quiz deleted.", "info")
     return redirect(url_for("main.course_quizzes", course_id=quiz.course.id))
+
+@main.route("/quiz/<int:quiz_id>/import", methods=["POST"])
+@login_required
+def import_ai_questions(quiz_id):
+
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    if not current_user.is_teacher_of(quiz.course):
+        abort(403)
+
+    data = request.get_json()
+
+    questions = data.get("questions", [])
+
+    for q in questions:
+
+        question = Question(
+            quiz_id=quiz.id,
+            text=q["question"]
+        )
+
+        db.session.add(question)
+        db.session.flush()
+
+        for option in q["options"]:
+
+            choice = Choice(
+                question_id=question.id,
+                text=option,
+                is_correct=(option == q["answer"])
+            )
+
+            db.session.add(choice)
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Questions imported successfully."
+    })

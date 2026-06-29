@@ -1,44 +1,33 @@
-
-const AI = {
+window.AI = {
 
     async generate({
 
         endpoint,
-
-        inputs = [],
-
-        outputId,
-
+        inputs,
+        outputId = null,
         buttonId,
-
         statusId,
-
         responseKey = "result",
-
         successMessage = "Generated successfully.",
+        onSuccess = null
 
-        loadingMessage = "Generating..."
-
-    }) {
+    }) 
+    {
 
         const button = document.getElementById(buttonId);
-        const output = document.getElementById(outputId);
         const status = document.getElementById(statusId);
 
-        if (!button || !output || !status) {
-
-            console.error("AI Utility: Required HTML elements not found.");
-
-            return;
-        }
+        const output = outputId? document.getElementById(outputId): null;
 
         const payload = {};
 
-        for (const input of inputs) {
+        for (const input of inputs) 
+        {
 
             const element = document.getElementById(input.id);
 
-            if (!element) {
+            if (!element) 
+            {
 
                 throw new Error(`Element '${input.id}' not found.`);
 
@@ -46,7 +35,8 @@ const AI = {
 
             const value = element.value.trim();
 
-            if (!value) {
+            if (!value) 
+            {
 
                 status.innerHTML =
                     `<span class="text-red-600">${input.label} is required.</span>`;
@@ -54,6 +44,7 @@ const AI = {
                 element.focus();
 
                 return;
+
             }
 
             payload[input.key] = value;
@@ -66,13 +57,14 @@ const AI = {
             <span class="material-symbols-outlined animate-spin">
                 progress_activity
             </span>
-            ${loadingMessage}
+            Generating...
         `;
 
         status.innerHTML =
-            "<span class='text-indigo-600'>Please wait...</span>";
+            "<span class='text-indigo-600'>Generating with AI...</span>";
 
-        try {
+        try 
+        {
 
             const response = await fetch(endpoint, {
 
@@ -88,43 +80,48 @@ const AI = {
 
             const data = await response.json();
 
-            if (!response.ok) {
+            if (!response.ok) 
+            {
 
-                throw new Error(
-                    data.message || "AI generation failed."
-                );
-
-            }
-
-            if (!(responseKey in data)) {
-
-                throw new Error(
-                    `Response key '${responseKey}' not found.`
-                );
+                throw new Error(data.message || "Generation failed.");
 
             }
 
-            const generatedContent = data[responseKey];
+            const result = data[responseKey];
 
-            if (
-                window.LMSCKEditor &&
-                LMSCKEditor.editors &&
-                LMSCKEditor.editors[outputId]
-            ) {
+            if (output && typeof result === "string") 
+            {
 
-                LMSCKEditor.editors[outputId].setData(generatedContent);
+                if (window.LMSCKEditor && LMSCKEditor.editors && LMSCKEditor.editors[outputId]) 
+                {
+
+                    LMSCKEditor.editors[outputId].setData(result);
+
+                } 
+                else 
+                {
+
+                    output.value = result;
+
+                }
 
             }
-            else {
 
-                output.value = data[responseKey];
+
+            if (onSuccess) 
+            {
+
+                onSuccess(result);
+
             }
+
             status.innerHTML =
                 `<span class="text-green-600">✓ ${successMessage}</span>`;
 
         }
 
-        catch (error) {
+        catch (error) 
+        {
 
             console.error(error);
 
@@ -133,7 +130,8 @@ const AI = {
 
         }
 
-        finally {
+        finally 
+        {
 
             button.disabled = false;
 

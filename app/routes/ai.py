@@ -2,6 +2,7 @@ from flask import Blueprint,jsonify,request
 from app.ai.course_generator import CourseGenerator
 from app.ai.lesson_generator import LessonGenerator
 from flask_login import login_required, current_user
+from app.ai.quiz_generator import QuizGenerator
 
 
 ai_bp = Blueprint("ai",__name__,url_prefix="/api/ai")
@@ -32,6 +33,7 @@ def generate_course_description():
         generator = CourseGenerator()
 
         description = generator.generate_description(title)
+        
         return jsonify({
 
             "success": True,
@@ -118,4 +120,51 @@ def generate_lesson_content():
 
             "error": str(e)
 
+        }), 500
+
+@ai_bp.route("/quiz", methods=["POST"])
+@login_required
+def generate_quiz():
+    try:
+
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form
+
+        if not data:
+            return jsonify({
+                "success": False,
+                "message": "Invalid request."
+            }), 400
+
+        course_title = data.get("course_title", "").strip()
+        lesson_title = data.get("lesson_title", "").strip()
+
+        difficulty = data.get("difficulty", "Medium").strip()
+
+        question_count = int(data.get("question_count", 10))
+
+        generator = QuizGenerator()
+
+        quiz = generator.generate_quiz(course_title=course_title,lesson_title=lesson_title,difficulty=difficulty,question_count=question_count)
+        print("Generated Quiz:", quiz)
+        return jsonify({
+            "success": True,
+            "quiz": quiz
+        }), 200
+
+    except ValueError as e:
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 400
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to generate quiz.",
+            "error": str(e)
         }), 500
