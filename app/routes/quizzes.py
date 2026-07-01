@@ -35,6 +35,7 @@ def add_question(quiz_id):
     form = QuestionForm()
     if form.validate_on_submit():
         question = Question(text=form.text.data, quiz_id=quiz.id)
+        print(f"\nAdding question: {question.text} to quiz: {quiz.title}\n")
         db.session.add(question)
         db.session.flush()
 
@@ -145,19 +146,19 @@ def import_ai_questions(quiz_id):
         db.session.add(question)
         db.session.flush()
 
-        for option in q["options"]:
+        for i, option in enumerate(q["options"]):
 
+            is_correct = (str(i+1) == q["answer"])
             choice = Choice(
                 question_id=question.id,
                 text=option,
-                is_correct=(option == q["answer"])
+                is_correct=is_correct
             )
 
             db.session.add(choice)
-
     db.session.commit()
 
     return jsonify({
         "success": True,
         "message": "Questions imported successfully."
-    })
+    })      

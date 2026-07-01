@@ -148,7 +148,6 @@ def generate_quiz():
         generator = QuizGenerator()
 
         quiz = generator.generate_quiz(course_title=course_title,lesson_title=lesson_title,difficulty=difficulty,question_count=question_count)
-        print("Generated Quiz:", quiz)
         return jsonify({
             "success": True,
             "quiz": quiz

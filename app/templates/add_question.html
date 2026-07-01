@@ -370,6 +370,7 @@
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Lesson</label>
         <select id="lessonTitle" class="field-select">
+          <option selected>Select a lesson</option>
           {% for lesson in quiz.course.lessons %}
           <option value="{{ lesson.title }}">{{ lesson.title }}</option>
           {% endfor %}

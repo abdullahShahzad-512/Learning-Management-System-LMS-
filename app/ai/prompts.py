@@ -39,7 +39,7 @@ class AIPrompts:
                     - The JSON must be parseable using Python's json.loads().
                     - Generate exactly the requested number of questions.
                     - Each question must have four unique options.
-                    - Exactly one option must be correct and index for the correct answer must be shuffled with respect to each question.
+                    - Exactly one option must be correct and index for the correct answer must be randomized and non-deterministic.
                     - Include a short explanation for the correct answer.
                     - Questions should test conceptual understanding rather than simple memorization.
 
