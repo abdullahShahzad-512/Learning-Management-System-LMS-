@@ -26,7 +26,7 @@ class Course(db.Model):
     description = db.Column(db.Text, nullable=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    thumbnail = db.Column(db.String(255))
+    thumbnail = db.Column(db.String(255), default="uploads/thumbnails/default-cover-banner.jpg")  
     teacher = db.relationship("User", backref=db.backref("courses_created", cascade="all, delete-orphan"))
 
 
